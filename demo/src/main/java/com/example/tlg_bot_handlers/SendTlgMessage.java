@@ -16,7 +16,6 @@ import com.example.exceptions.AppErrorCheckedException;
 
 public class SendTlgMessage {
     private static final Logger logger = Logger.getLogger(SendTlgMessage.class.getName());
-    private static final String CLASS_NAME = SendMessage.class.getName();
 
     public static void sendDefaultError(TelegramClient telegramClient, String language,
             long chatId) {
@@ -33,14 +32,12 @@ public class SendTlgMessage {
 
     public static void send(TelegramClient telegramClient, long chatId, String messageText)
             throws AppErrorCheckedException {
-        SendMessage msg =
-                SendMessage.builder().chatId(chatId).parseMode("HTML").text(messageText).build();
+        SendMessage msg = SendMessage.builder().chatId(chatId).parseMode("HTML").text(messageText).build();
         try {
             telegramClient.execute(msg);
         } catch (TelegramApiException e) {
             logger.severe("send" + e);
-            throw new AppErrorCheckedException(String.format("%s:send Runtime Error.", CLASS_NAME));
-
+            throw new AppErrorCheckedException("Runtime Error.");
         }
     }
 
@@ -57,9 +54,8 @@ public class SendTlgMessage {
                 keyboardMarkup.add(keyboardRow);
             } catch (UnsupportedOperationException | ClassCastException | NullPointerException
                     | IllegalArgumentException e) {
-                logger.severe(String.format("%s:%s:%s", CLASS_NAME, FUN_NAME, e));
-                throw new AppErrorCheckedException(
-                        String.format("%s:%s: Runtime Error", CLASS_NAME, FUN_NAME));
+                logger.severe(e.toString());
+                throw new AppErrorCheckedException("Runtime Error");
             }
         }
         SendMessage msg = SendMessage.builder().chatId(chatId).text(messageText).parseMode("HTML")
@@ -67,9 +63,8 @@ public class SendTlgMessage {
         try {
             telegramClient.execute(msg);
         } catch (TelegramApiException e) {
-            logger.severe(String.format("%s:%s:%s", CLASS_NAME, FUN_NAME, e));
-            throw new AppErrorCheckedException(
-                    String.format("%s:%s: Runtime Error", CLASS_NAME, FUN_NAME));
+            logger.severe(e.toString());
+            throw new AppErrorCheckedException("Runtime Error");
         }
     }
 
@@ -82,7 +77,7 @@ public class SendTlgMessage {
         } catch (TelegramApiException e) {
             logger.severe("sendForceReply" + e);
             throw new AppErrorCheckedException(
-                    String.format("%s:sendForceReply: Runtime Error.", CLASS_NAME));
+                    "Runtime Error.");
         }
     }
 
@@ -99,9 +94,8 @@ public class SendTlgMessage {
                 keyboardMarkup.add(keyboardRow);
             } catch (UnsupportedOperationException | ClassCastException | NullPointerException
                     | IllegalArgumentException e) {
-                logger.severe(String.format("%s:%s:%s", CLASS_NAME, FUN_NAME, e));
-                throw new AppErrorCheckedException(
-                        String.format("%s:%s: Runtime Error", CLASS_NAME, FUN_NAME));
+                logger.severe(e.toString());
+                throw new AppErrorCheckedException("Runtime Error");
             }
         }
         EditMessageText msg = EditMessageText.builder().chatId(chatId).messageId(messageId)
@@ -110,9 +104,8 @@ public class SendTlgMessage {
         try {
             telegramClient.execute(msg);
         } catch (TelegramApiException e) {
-            logger.severe(String.format("%s:%s:%s", CLASS_NAME, FUN_NAME, e));
-            throw new AppErrorCheckedException(
-                    String.format("%s:%s: Runtime Error", CLASS_NAME, FUN_NAME));
+            logger.severe(e.toString());
+            throw new AppErrorCheckedException("Runtime Error");
         }
     }
 }

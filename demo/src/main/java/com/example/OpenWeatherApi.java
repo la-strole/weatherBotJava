@@ -16,35 +16,43 @@ import org.json.JSONObject;
 import com.example.exceptions.AppErrorCheckedException;
 import io.github.cdimascio.dotenv.Dotenv;
 
-
 /**
- * The OpenWeatherApi class provides methods to interact with the OpenWeatherMap API. It allows
- * retrieving current weather, weather forecasts, and air pollution data for specified locations.
+ * The OpenWeatherApi class provides methods to interact with the OpenWeatherMap
+ * API. It allows
+ * retrieving current weather, weather forecasts, and air pollution data for
+ * specified locations.
  * 
  * <p>
  * API endpoints used:
  * <ul>
  * <li>Current Weather: https://api.openweathermap.org/data/2.5/weather</li>
  * <li>Weather Forecast: https://api.openweathermap.org/data/2.5/forecast</li>
- * <li>Current Air Pollution: http://api.openweathermap.org/data/2.5/air_pollution</li>
- * <li>Air Pollution Forecast: http://api.openweathermap.org/data/2.5/air_pollution/forecast</li>
+ * <li>Current Air Pollution:
+ * http://api.openweathermap.org/data/2.5/air_pollution</li>
+ * <li>Air Pollution Forecast:
+ * http://api.openweathermap.org/data/2.5/air_pollution/forecast</li>
  * </ul>
  * 
  * <p>
  * Methods:
  * <ul>
- * <li>{@link #getCurrentWeather(Double, Double, String)}: Retrieves the current weather information
+ * <li>{@link #getCurrentWeather(Double, Double, String)}: Retrieves the current
+ * weather information
  * for a specified location.</li>
- * <li>{@link #getWeatherForcast(Double, Double, String)}: Retrieves the weather forecast for a
+ * <li>{@link #getWeatherForcast(Double, Double, String)}: Retrieves the weather
+ * forecast for a
  * given longitude, latitude</li>
- * <li>{@link #getCurrentAirPollution(Double, Double)}: Retrieves the current air pollution data for
+ * <li>{@link #getCurrentAirPollution(Double, Double)}: Retrieves the current
+ * air pollution data for
  * the specified longitude and latitude.</li>
- * <li>{@link #getForcastAirPollution(Double, Double)}: Retrieves the air pollution forecast for a
+ * <li>{@link #getForcastAirPollution(Double, Double)}: Retrieves the air
+ * pollution forecast for a
  * given longitude and latitude.</li>
  * </ul>
  * 
  * <p>
- * Note: The API key for OpenWeatherMap must be provided in the environment variable
+ * Note: The API key for OpenWeatherMap must be provided in the environment
+ * variable
  * "OpenWeatherToken".
  * 
  * <p>
@@ -70,37 +78,32 @@ import io.github.cdimascio.dotenv.Dotenv;
  * @see DataValidation
  */
 public class OpenWeatherApi {
-    private static final String CURRENT_WEATHER_API_URL =
-            "https://api.openweathermap.org/data/2.5/weather";
-    private static final String WEATHER_FORCAST_API_URL =
-            "https://api.openweathermap.org/data/2.5/forecast";
-    private static final String CURRENT_AIR_POLLUTION_API_URL =
-            "http://api.openweathermap.org/data/2.5/air_pollution";
-    private static final String FORCAST_AIR_POLLUTION_API_URL =
-            "http://api.openweathermap.org/data/2.5/air_pollution/forecast";
+    private static final String CURRENT_WEATHER_API_URL = "https://api.openweathermap.org/data/2.5/weather";
+    private static final String WEATHER_FORCAST_API_URL = "https://api.openweathermap.org/data/2.5/forecast";
+    private static final String CURRENT_AIR_POLLUTION_API_URL = "http://api.openweathermap.org/data/2.5/air_pollution";
+    private static final String FORCAST_AIR_POLLUTION_API_URL = "http://api.openweathermap.org/data/2.5/air_pollution/forecast";
 
     private static final Logger logger = Logger.getLogger(OpenWeatherApi.class.getName());
-    private static final String CLASS_NAME = OpenWeatherApi.class.getName();
-
 
     /**
-     * Retrieves the current weather information for the specified longitude and latitude.
+     * Retrieves the current weather information for the specified longitude and
+     * latitude.
      *
-     * @param lon the longitude of the location
-     * @param lat the latitude of the location
+     * @param lon      the longitude of the location
+     * @param lat      the latitude of the location
      * @param language the language for the weather description
      * @return a JSONObject containing the current weather information
-     * @throws AppErrorCheckedException if there is an error during the API call or invalid
-     *         coordinates
+     * @throws AppErrorCheckedException if there is an error during the API call or
+     *                                  invalid
+     *                                  coordinates
      */
     public static JSONObject getCurrentWeather(Double lon, Double lat, String language)
             throws AppErrorCheckedException {
-        final String FUN_NAME = "getCurrentWeather";
         if (!DataValidation.isLongitudeValid(lon) || !DataValidation.isLatitudeValid(lat)) {
             logger.severe(
-                    String.format("%s: Invalid lon or lat: lon=%d, lat=%d.", FUN_NAME, lon, lat));
+                    String.format("Invalid lon or lat: lon=%d, lat=%d.", lon, lat));
             throw new AppErrorCheckedException(
-                    String.format("%s:%s: Runtime Error", CLASS_NAME, FUN_NAME));
+                    "Runtime Error");
         }
         Dotenv dotenv = Dotenv.load();
         final String API_KEY = dotenv.get("OpenWeatherToken");
@@ -111,42 +114,39 @@ public class OpenWeatherApi {
             params.put("appid", API_KEY);
             params.put("units", "metric");
             params.put("lang", language);
-            JSONArray result =
-                    JsonHandler.getJsonFromWeb(CURRENT_WEATHER_API_URL, Optional.of(params));
+            JSONArray result = JsonHandler.getJsonFromWeb(CURRENT_WEATHER_API_URL, Optional.of(params));
             if (result.isEmpty()) {
-                logger.severe(String.format("%s: Result from JsonHandler.getJsonFromWeb is empty.",
-                        FUN_NAME));
+                logger.severe("Result from JsonHandler.getJsonFromWeb is empty.");
                 throw new AppErrorCheckedException(
-                        String.format("%s:%s: Runtime Error", CLASS_NAME, FUN_NAME));
+                        "Runtime Error");
             }
             return result.getJSONObject(0);
         } catch (JSONException | UnsupportedOperationException | ClassCastException
                 | NullPointerException | IllegalArgumentException e) {
-            logger.severe(String.format("%s:%s", FUN_NAME, e));
+            logger.severe(e.toString());
             throw new AppErrorCheckedException(
-                    String.format("%s:%s: Runtime Error", CLASS_NAME, FUN_NAME));
+                    "Runtime Error");
         }
     }
-
 
     /**
      * Retrieves the weather forecast for a given longitude and latitude.
      *
-     * @param lon the longitude of the location
-     * @param lat the latitude of the location
+     * @param lon      the longitude of the location
+     * @param lat      the latitude of the location
      * @param language the language for the weather description
      * @return a JSONObject containing the weather forecast
-     * @throws AppErrorCheckedException if there is an error during the process or if the input data
-     *         is invalid
+     * @throws AppErrorCheckedException if there is an error during the process or
+     *                                  if the input data
+     *                                  is invalid
      */
     public static JSONObject getWeatherForecast(Double lon, Double lat, String language)
             throws AppErrorCheckedException {
-        final String FUN_NAME = "getWeatherForecast";
         if (!DataValidation.isLongitudeValid(lon) || !DataValidation.isLatitudeValid(lat)) {
             logger.severe(
-                    String.format("%s: Invalid lon or lat: lon=%d, lat=%d.", FUN_NAME, lon, lat));
+                    String.format("Invalid lon or lat: lon=%d, lat=%d.", lon, lat));
             throw new AppErrorCheckedException(
-                    String.format("%s:%s: Runtime Error", CLASS_NAME, FUN_NAME));
+                    "Runtime Error");
         }
         Dotenv dotenv = Dotenv.load();
         final String API_KEY = dotenv.get("OpenWeatherToken");
@@ -157,40 +157,39 @@ public class OpenWeatherApi {
             params.put("appid", API_KEY);
             params.put("units", "metric");
             params.put("lang", language);
-            JSONArray result =
-                    JsonHandler.getJsonFromWeb(WEATHER_FORCAST_API_URL, Optional.of(params));
+            JSONArray result = JsonHandler.getJsonFromWeb(WEATHER_FORCAST_API_URL, Optional.of(params));
             if (result.isEmpty()) {
-                logger.severe(String.format("%s: Result from JsonHandler.getJsonFromWeb is empty.",
-                        FUN_NAME));
+                logger.severe("Result from JsonHandler.getJsonFromWeb is empty.");
                 throw new AppErrorCheckedException(
-                        String.format("%s:%s: Runtime Error", CLASS_NAME, FUN_NAME));
+                        "Runtime Error");
             }
             return result.getJSONObject(0);
         } catch (JSONException | UnsupportedOperationException | ClassCastException
                 | NullPointerException | IllegalArgumentException e) {
-            logger.severe(String.format("%s:%s", FUN_NAME, e));
+            logger.severe(e.toString());
             throw new AppErrorCheckedException(
-                    String.format("%s:%s: Runtime Error", CLASS_NAME, FUN_NAME));
+                    "Runtime Error");
         }
     }
 
     /**
-     * Retrieves the current air pollution data for the specified longitude and latitude.
+     * Retrieves the current air pollution data for the specified longitude and
+     * latitude.
      *
      * @param lon the longitude of the location
      * @param lat the latitude of the location
      * @return a JSONObject containing the air pollution data
-     * @throws AppErrorCheckedException if there is an error during the process or if the input is
-     *         invalid
+     * @throws AppErrorCheckedException if there is an error during the process or
+     *                                  if the input is
+     *                                  invalid
      */
     public static JSONObject getCurrentAirPollution(Double lon, Double lat)
             throws AppErrorCheckedException {
-        final String FUN_NAME = "getCurrentAirPollution";
         if (!DataValidation.isLongitudeValid(lon) || !DataValidation.isLatitudeValid(lat)) {
-            logger.severe(String.format("%s:%s:Invalid input: lon=%d,lat=%d.", CLASS_NAME, FUN_NAME,
+            logger.severe(String.format("Invalid input: lon=%d,lat=%d.",
                     lon, lat));
             throw new AppErrorCheckedException(
-                    String.format("%s:%s: Runtime Error.", CLASS_NAME, FUN_NAME));
+                    "Runtime Error.");
         }
         Dotenv dotenv = Dotenv.load();
         final String API_KEY = dotenv.get("OpenWeatherToken");
@@ -199,24 +198,22 @@ public class OpenWeatherApi {
             params.put("lat", lat.toString());
             params.put("lon", lon.toString());
             params.put("appid", API_KEY);
-            JSONArray result =
-                    JsonHandler.getJsonFromWeb(CURRENT_AIR_POLLUTION_API_URL, Optional.of(params));
+            JSONArray result = JsonHandler.getJsonFromWeb(CURRENT_AIR_POLLUTION_API_URL,
+                    Optional.of(params));
             if (result.isEmpty()) {
                 logger.severe(
-                        String.format("%s:%s: result from JsonHandler.getJsonFromWeb is empty.",
-                                CLASS_NAME, FUN_NAME));
+                        "Result from JsonHandler.getJsonFromWeb is empty.");
                 throw new AppErrorCheckedException(
-                        String.format("%s:%s: Runtime Error", CLASS_NAME, FUN_NAME));
+                        "Runtime Error");
             }
             return result.getJSONObject(0);
         } catch (JSONException | UnsupportedOperationException | ClassCastException
                 | NullPointerException | IllegalArgumentException e) {
-            logger.severe(String.format("%s:%s: %s", CLASS_NAME, FUN_NAME, e));
+            logger.severe(e.toString());
             throw new AppErrorCheckedException(
-                    String.format("%s:%s: Runtime Error.", CLASS_NAME, FUN_NAME));
+                    "Runtime Error.");
         }
     }
-
 
     /**
      * Retrieves the air pollution forecast for a given longitude and latitude.
@@ -224,17 +221,17 @@ public class OpenWeatherApi {
      * @param lon the longitude of the location
      * @param lat the latitude of the location
      * @return a JSONObject containing the air pollution forecast data
-     * @throws AppErrorCheckedException if there is an error with the input data or during the API
-     *         call
+     * @throws AppErrorCheckedException if there is an error with the input data or
+     *                                  during the API
+     *                                  call
      */
     public static JSONObject getForcastAirPollution(Double lon, Double lat)
             throws AppErrorCheckedException {
-        final String FUN_NAME = "getForcastAirPollution";
         if (!DataValidation.isLongitudeValid(lon) || !DataValidation.isLatitudeValid(lat)) {
-            logger.severe(String.format("%s:%s:Invalid input: lon=%d,lat=%d.", CLASS_NAME, FUN_NAME,
+            logger.severe(String.format("Invalid input: lon=%d,lat=%d.",
                     lon, lat));
             throw new AppErrorCheckedException(
-                    String.format("%s:%s: Runtime Error.", CLASS_NAME, FUN_NAME));
+                    "Runtime Error.");
         }
         Dotenv dotenv = Dotenv.load();
         final String API_KEY = dotenv.get("OpenWeatherToken");
@@ -243,21 +240,19 @@ public class OpenWeatherApi {
             params.put("lat", lat.toString());
             params.put("lon", lon.toString());
             params.put("appid", API_KEY);
-            JSONArray result =
-                    JsonHandler.getJsonFromWeb(FORCAST_AIR_POLLUTION_API_URL, Optional.of(params));
+            JSONArray result = JsonHandler.getJsonFromWeb(FORCAST_AIR_POLLUTION_API_URL,
+                    Optional.of(params));
             if (result.isEmpty()) {
                 logger.severe(
-                        String.format("%s:%s: result from JsonHandler.getJsonFromWeb is empty.",
-                                CLASS_NAME, FUN_NAME));
+                        "Result from JsonHandler.getJsonFromWeb is empty.");
                 throw new AppErrorCheckedException(
-                        String.format("%s:%s: Runtime Error", CLASS_NAME, FUN_NAME));
+                        "Runtime Error");
             }
             return result.getJSONObject(0);
         } catch (JSONException | UnsupportedOperationException | ClassCastException
                 | NullPointerException | IllegalArgumentException e) {
-            logger.severe(String.format("%s:%s: %s", CLASS_NAME, FUN_NAME, e));
-            throw new AppErrorCheckedException(
-                    String.format("%s:%s: Runtime Error.", CLASS_NAME, FUN_NAME));
+            logger.severe(e.toString());
+            throw new AppErrorCheckedException("Runtime Error.");
         }
     }
 
@@ -265,13 +260,13 @@ public class OpenWeatherApi {
      * Extracts weather information from a JSON object and formats it into a string.
      *
      * @param currentWeather The JSON object containing the current weather data.
-     * @param language The language code for localization of the output.
+     * @param language       The language code for localization of the output.
      * @return A formatted string containing the weather information.
-     * @throws AppErrorCheckedException If there is an error processing the JSON data.
+     * @throws AppErrorCheckedException If there is an error processing the JSON
+     *                                  data.
      */
     public static String getStringFromJsonCurrentWeather(JSONObject currentWeather, String language)
             throws AppErrorCheckedException {
-        final String FUN_NAME = "getStringFromJsonCurrentWeather";
         final ResourceBundle rb = DataValidation.getMessages(language);
 
         StringBuilder result = new StringBuilder();
@@ -359,15 +354,14 @@ public class OpenWeatherApi {
 
             return result.toString();
         } catch (JSONException e) {
-            logger.severe(String.format("%s:%s: %s", CLASS_NAME, FUN_NAME, e));
-            throw new AppErrorCheckedException(
-                    String.format("%s:%s: Runtime Error.", CLASS_NAME, FUN_NAME));
+            logger.severe(e.toString());
+            throw new AppErrorCheckedException("Runtime Error.");
         }
     }
 
-
     /**
-     * Parses a forecast JSON object and returns a formatted string with weather details.
+     * Parses a forecast JSON object and returns a formatted string with weather
+     * details.
      *
      * @param forecast the JSON object containing the forecast data
      * @param timezone the timezone offset in seconds
@@ -377,15 +371,16 @@ public class OpenWeatherApi {
      */
     private static String parseForcastListItem(JSONObject forecast, int timezone, String language)
             throws AppErrorCheckedException {
-        final String FUN_NAME = "parseForcastListItem";
         final ResourceBundle rb = DataValidation.getMessages(language);
         StringBuilder result = new StringBuilder();
         // Get the timestamp and timezone
         try {
             result.append(String.format("<b>%s:</b>%n",
                     DataValidation
-                            .utcTimeFormatter(DataValidation.getDateTimeObjectFromUnixTimestamp(
-                                    forecast.getLong("dt") + timezone))));
+                            .utcTimeFormatter(DataValidation
+                                    .getDateTimeObjectFromUnixTimestamp(
+                                            forecast.getLong("dt")
+                                                    + timezone))));
             String visibility = forecast.optString("visibility", "");
             JSONObject main = forecast.getJSONObject("main");
             String temp = main.get("temp").toString();
@@ -448,35 +443,35 @@ public class OpenWeatherApi {
             }
             return result.toString();
         } catch (JSONException e) {
-            logger.severe(String.format("%s:%s: %s", CLASS_NAME, FUN_NAME, e));
+            logger.severe(e.toString());
             throw new AppErrorCheckedException(
-                    String.format("%s:%s: Runtime Error.", CLASS_NAME, FUN_NAME));
+                    "Runtime Error.");
         }
 
     }
-
 
     /**
      * Extracts and formats weather forecast data from a given JSON object.
      *
      * @param weatherForecast The JSON object containing the weather forecast data.
-     * @param language The language in which the forecast should be formatted.
-     * @return A JSONArray containing formatted weather forecast strings. ["dt":"forecast
+     * @param language        The language in which the forecast should be
+     *                        formatted.
+     * @return A JSONArray containing formatted weather forecast strings.
+     *         ["dt":"forecast
      *         string",...]
-     * @throws AppErrorCheckedException If there is an error processing the JSON data.
+     * @throws AppErrorCheckedException If there is an error processing the JSON
+     *                                  data.
      */
     public static JSONArray getArrayStringFromJsonWeatherForecast(JSONObject weatherForecast,
             String language) throws AppErrorCheckedException {
-        final String FUN_NAME = "getArrayStringFromJsonWeatherForecast";
         JSONArray finalResult = new JSONArray();
         StringBuilder result = new StringBuilder();
         try {
             String cityName = weatherForecast.getJSONObject("city").getString("name");
             JSONArray list = weatherForecast.getJSONArray("list");
             int timezone = weatherForecast.getJSONObject("city").getInt("timezone");
-            LocalDateTime currentDateTimeFromList =
-                    DataValidation.getDateTimeObjectFromUnixTimestamp(
-                            list.getJSONObject(0).getLong("dt") + timezone);
+            LocalDateTime currentDateTimeFromList = DataValidation.getDateTimeObjectFromUnixTimestamp(
+                    list.getJSONObject(0).getLong("dt") + timezone);
             result.append(String.format("<b>%s %s:</b>%n", cityName,
                     DataValidation.utcDateFormatter(currentDateTimeFromList)));
 
@@ -484,8 +479,8 @@ public class OpenWeatherApi {
 
                 JSONObject forecast = list.getJSONObject(i);
                 long timestamp = forecast.getLong("dt");
-                LocalDateTime dateTime =
-                        DataValidation.getDateTimeObjectFromUnixTimestamp(timestamp + timezone);
+                LocalDateTime dateTime = DataValidation
+                        .getDateTimeObjectFromUnixTimestamp(timestamp + timezone);
                 if (dateTime.getDayOfMonth() == currentDateTimeFromList.getDayOfMonth()) {
                     result.append(parseForcastListItem(forecast, timezone, language));
                 } else {
@@ -500,9 +495,9 @@ public class OpenWeatherApi {
             }
             return finalResult;
         } catch (JSONException e) {
-            logger.severe(String.format("%s:%s: %s", CLASS_NAME, FUN_NAME, e));
+            logger.severe(e.toString());
             throw new AppErrorCheckedException(
-                    String.format("%s:%s: Runtime Error.", CLASS_NAME, FUN_NAME));
+                    "Runtime Error.");
         }
     }
 
@@ -512,15 +507,14 @@ public class OpenWeatherApi {
             JSONObject object = (JSONObject) forecast.get(index);
             String dateIso = object.keys().next();
             LocalDateTime date = LocalDateTime.parse(dateIso, DateTimeFormatter.ISO_DATE_TIME);
-            DateTimeFormatter formatter =
-                    DateTimeFormatter.ofPattern("dd MMM", Locale.forLanguageTag(language));
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM",
+                    Locale.forLanguageTag(language));
             return date.format(formatter);
 
         } catch (NoSuchElementException | DateTimeException | IllegalArgumentException
                 | NullPointerException | JSONException e) {
-            logger.severe(String.format("%s:getDayOfMonthsFromForecastArray: %s", CLASS_NAME, e));
+            logger.severe(e.toString());
             return "";
         }
     }
 }
-

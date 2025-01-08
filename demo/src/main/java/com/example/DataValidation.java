@@ -12,17 +12,21 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
 /**
- * The DataValidation class provides methods to validate various data inputs such as language codes,
+ * The DataValidation class provides methods to validate various data inputs
+ * such as language codes,
  * city names, longitude, and latitude.
  * 
  * <p>
- * This class contains a static map of supported languages and provides methods to check if a
- * language is supported, if a city name is valid, and if longitude and latitude values are within
+ * This class contains a static map of supported languages and provides methods
+ * to check if a
+ * language is supported, if a city name is valid, and if longitude and latitude
+ * values are within
  * valid ranges.
  * </p>
  * 
  * <p>
- * Supported languages are stored in a static map with language codes as keys and language names as
+ * Supported languages are stored in a static map with language codes as keys
+ * and language names as
  * values.
  * </p>
  * 
@@ -30,17 +34,19 @@ import java.time.format.DateTimeFormatter;
  * Methods:
  * </p>
  * <ul>
- * <li>{@link #isCityNameValid(String)} - Validates a city name based on allowed characters and
+ * <li>{@link #isCityNameValid(String)} - Validates a city name based on allowed
+ * characters and
  * length.</li>
- * <li>{@link #isLongitudeValid(Double)} - Validates if a longitude value is within the range of
+ * <li>{@link #isLongitudeValid(Double)} - Validates if a longitude value is
+ * within the range of
  * -180 to 180.</li>
- * <li>{@link #isLatitudeValid(Double)} - Validates if a latitude value is within the range of -90
+ * <li>{@link #isLatitudeValid(Double)} - Validates if a latitude value is
+ * within the range of -90
  * to 90.</li>
  * </ul>
  */
 public class DataValidation {
     private static final Logger logger = Logger.getLogger(DataValidation.class.getName());
-    private static final String CLASS_NAME = DataValidation.class.getName();
 
     public static ResourceBundle getMessages(String language) {
         Locale locale = Locale.forLanguageTag(language);
@@ -59,8 +65,7 @@ public class DataValidation {
             return messages.getString(string);
         } catch (NullPointerException | MissingResourceException | ClassCastException e) {
             logger.severe("getString\t" + e);
-            throw new AppErrorCheckedException(
-                    String.format("%s:getString: Runtime Error.", CLASS_NAME));
+            throw new AppErrorCheckedException("Runtime Error.");
         }
     }
 
@@ -73,19 +78,16 @@ public class DataValidation {
      */
     public static String utcTimeFormatter(LocalDateTime dateTimeObject)
             throws AppErrorCheckedException {
-        final String FUN_NAME = "utcTimeFormatter";
         try {
 
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
             return dateTimeObject.format(formatter);
         } catch (DateTimeException | IllegalArgumentException e) {
-            logger.severe(String.format("%s:%s: dateTime = %s, Error:%s", CLASS_NAME, FUN_NAME,
+            logger.severe(String.format("dateTime = %s, Error:%s",
                     dateTimeObject.toString(), e));
-            throw new AppErrorCheckedException(
-                    String.format("%s:%s: Runtime Error.", CLASS_NAME, FUN_NAME));
+            throw new AppErrorCheckedException("Runtime Error.");
         }
     }
-
 
     /**
      * Formats a given LocalDateTime object to a string in the format "dd.MM.yyyy".
@@ -96,18 +98,16 @@ public class DataValidation {
      */
     public static String utcDateFormatter(LocalDateTime dateTimeObject)
             throws AppErrorCheckedException {
-        final String FUN_NAME = "utcDateFormatter";
         try {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
             return dateTimeObject.format(formatter);
         } catch (DateTimeException | IllegalArgumentException e) {
-            logger.severe(String.format("%s:%s: dateTime = %s, Error:%s", CLASS_NAME, FUN_NAME,
+            logger.severe(String.format("dateTime = %s, Error:%s",
                     dateTimeObject.toString(), e));
             throw new AppErrorCheckedException(
-                    String.format("%s:%s: Runtime Error.", CLASS_NAME, FUN_NAME));
+                    "Runtime Error.");
         }
     }
-
 
     /**
      * Converts a Unix timestamp to a LocalDateTime object in UTC.
@@ -118,15 +118,14 @@ public class DataValidation {
      */
     public static LocalDateTime getDateTimeObjectFromUnixTimestamp(long unixTimestamp)
             throws AppErrorCheckedException {
-        final String FUN_NAME = "getDateTimeObjectFromUnixTimestamp";
+
         try {
             Instant instant = Instant.ofEpochSecond(unixTimestamp);
             return LocalDateTime.ofInstant(instant, ZoneId.of("UTC"));
         } catch (DateTimeException e) {
-            logger.severe(String.format("%s:%s: unixTimestamp = %d, Error:%s", CLASS_NAME, FUN_NAME,
+            logger.severe(String.format("unixTimestamp = %d, Error:%s",
                     unixTimestamp, e));
-            throw new AppErrorCheckedException(
-                    String.format("%s:%s: Runtime Error.", CLASS_NAME, FUN_NAME));
+            throw new AppErrorCheckedException("Runtime Error.");
         }
     }
 
@@ -146,4 +145,3 @@ public class DataValidation {
         return (tableName.equals("multipleCities") || tableName.equals("forecasts"));
     }
 }
-

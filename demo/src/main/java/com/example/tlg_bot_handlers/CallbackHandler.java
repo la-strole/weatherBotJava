@@ -16,7 +16,7 @@ import com.example.exceptions.AppErrorCheckedException;
 
 public class CallbackHandler {
     private static final Logger logger = Logger.getLogger(CallbackHandler.class.getName());
-    private static final String CLASS_NAME = CallbackHandler.class.getName();
+
     TelegramClient telegramClient;
     long chatId;
     String language;
@@ -38,15 +38,14 @@ public class CallbackHandler {
             originalMessage = (Message) update.getCallbackQuery().getMessage();
         } catch (Exception e) {
             logger.severe(String.format(
-                    "%s:CallbackHandler: Original message inaccessable. chat_id=%d. callback=%s",
-                    CLASS_NAME, chatId, callbackText));
+                    "Original message inaccessable. chat_id=%d. callback=%s",
+                    chatId, callbackText));
             throw new AppErrorCheckedException(
-                    String.format("%s:CallbackHandler: Runtime Error.", CLASS_NAME));
+                    " Runtime Error.");
         }
     }
 
     private void callbackMultipleCitiesChoise() {
-        final String FUN_NAME = "callbackMultipleCitiesChoise";
         long originalMsgId;
         JSONArray citiesCoordinates;
         int index;
@@ -55,7 +54,7 @@ public class CallbackHandler {
             index = Integer.parseInt(callbackText.substring(1));
             originalMsgId = originalMessage.getReplyToMessage().getMessageId();
         } catch (NumberFormatException | IndexOutOfBoundsException e) {
-            logger.severe(String.format("%s:%s: %s", CLASS_NAME, FUN_NAME, e));
+            logger.severe(e.toString());
             SendTlgMessage.sendDefaultError(telegramClient, language, chatId);
             return;
         }
@@ -68,17 +67,16 @@ public class CallbackHandler {
         }
         if (citiesCoordinates.isEmpty()) {
             logger.severe(
-                    String.format("%s:%s Database.getCoordinates() is empty. chatID=%d, msgID=%d",
-                            CLASS_NAME, FUN_NAME, chatId, originalMsgId));
+                    String.format("Database.getCoordinates() is empty. chatID=%d, msgID=%d",
+                            chatId, originalMsgId));
             SendTlgMessage.sendDefaultError(telegramClient, language, chatId);
             return;
         }
         MessageHandler.sendCurrentWeatherForOneCity(citiesCoordinates, index, language,
-                telegramClient, chatId, FUN_NAME);
+                telegramClient, chatId);
     }
 
     private void callbackForecast() {
-        final String FUN_NAME = "callbackForecast";
         double lon;
         double lat;
         JSONArray resultForecastStringArray;
@@ -91,7 +89,7 @@ public class CallbackHandler {
             lat = Double.parseDouble(latLine.split(":")[1].trim());
             lon = Double.parseDouble(lonLine.split(":")[1].trim());
         } catch (Exception e) {
-            logger.severe(String.format("%s:%s:%s", CLASS_NAME, FUN_NAME, e));
+            logger.severe(e.toString());
             return;
         }
         try {
@@ -103,8 +101,7 @@ public class CallbackHandler {
                     resultForecastStringArray);
             // Edit the original message with the first day forecast.
             JSONObject forecastFirstDayJSONObject = resultForecastStringArray.getJSONObject(0);
-            String msgText =
-                    forecastFirstDayJSONObject.getString(forecastFirstDayJSONObject.keys().next());
+            String msgText = forecastFirstDayJSONObject.getString(forecastFirstDayJSONObject.keys().next());
             String dateForward = OpenWeatherApi
                     .getDayOfMonthFromForecastArray(resultForecastStringArray, 1, language);
             InlineKeyboardButton button = InlineKeyboardButton.builder()
@@ -117,13 +114,12 @@ public class CallbackHandler {
             SendTlgMessage.editMessagText(telegramClient, originalMessage.getMessageId(), chatId,
                     msgText, keyboard);
         } catch (AppErrorCheckedException e) {
-            logger.severe(String.format("%s:%s:Can not complete collback Forecast.", CLASS_NAME,
-                    FUN_NAME));
+            logger.severe("Can not complete collback Forecast.");
         }
     }
 
     private void callbackForecastNavigation() {
-        final String FUN_NAME = "callbackForecastNavigation";
+
         // Get the index from the callback data.
         int index = Integer.parseInt(callbackText.split(":")[1]);
         // Get messageId from the original message.
@@ -132,8 +128,7 @@ public class CallbackHandler {
         try {
             JSONArray forecastArray = Database.getForecast(chatId, msgId);
             if (forecastArray.isEmpty()) {
-                logger.severe(String.format("%s:%s: Failed to get forecast from the database.",
-                        CLASS_NAME, FUN_NAME));
+                logger.severe("Failed to get forecast from the database.");
                 return;
             }
             // Get the forecast text from the forecast array.
@@ -150,22 +145,20 @@ public class CallbackHandler {
             List<InlineKeyboardButton> row = new ArrayList<>();
             // Create the button for the backward date if it is not empty.
             if (!dateBackward.isEmpty()) {
-                InlineKeyboardButton buttonBackward =
-                        InlineKeyboardButton.builder()
-                                .text(new String(Character.toChars(0x1f448)) + " " + dateBackward)
-                                .callbackData(String.format("%s:%d",
-                                        CallbackHandler.CallbackValues.FI.name(), index - 1))
-                                .build();
+                InlineKeyboardButton buttonBackward = InlineKeyboardButton.builder()
+                        .text(new String(Character.toChars(0x1f448)) + " " + dateBackward)
+                        .callbackData(String.format("%s:%d",
+                                CallbackHandler.CallbackValues.FI.name(), index - 1))
+                        .build();
                 row.add(buttonBackward);
             }
             // Create the button for the forward date if it is not empty.
             if (!dateForward.isEmpty()) {
-                InlineKeyboardButton buttonForward =
-                        InlineKeyboardButton.builder()
-                                .text(new String(Character.toChars(0x1f449)) + " " + dateForward)
-                                .callbackData(String.format("%s:%d",
-                                        CallbackHandler.CallbackValues.FI.name(), index + 1))
-                                .build();
+                InlineKeyboardButton buttonForward = InlineKeyboardButton.builder()
+                        .text(new String(Character.toChars(0x1f449)) + " " + dateForward)
+                        .callbackData(String.format("%s:%d",
+                                CallbackHandler.CallbackValues.FI.name(), index + 1))
+                        .build();
                 row.add(buttonForward);
             }
             keyboard.add(row);
@@ -175,13 +168,13 @@ public class CallbackHandler {
 
         } catch (JSONException | UnsupportedOperationException | ClassCastException
                 | NullPointerException | IllegalArgumentException e) {
-            logger.severe(String.format("%s:%s: %s", CLASS_NAME, FUN_NAME, e));
-        } catch (AppErrorCheckedException e2){
+            logger.severe(e.toString());
+        } catch (AppErrorCheckedException e2) {
             return;
         }
     }
 
-    public void callbackHandle(){
+    public void callbackHandle() {
         if (callbackText.startsWith("C")) {
             callbackMultipleCitiesChoise();
         } else if (callbackText.equals("F")) {

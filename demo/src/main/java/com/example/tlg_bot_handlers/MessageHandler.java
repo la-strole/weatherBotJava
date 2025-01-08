@@ -18,7 +18,6 @@ import com.example.exceptions.AppErrorCheckedException;
 
 public class MessageHandler {
     private static final Logger logger = Logger.getLogger(MessageHandler.class.getName());
-    private static final String CLASS_NAME = MessageHandler.class.getName();
     TelegramClient telegramClient;
     Update update;
     long chatId;
@@ -40,7 +39,7 @@ public class MessageHandler {
     }
 
     public static void sendCurrentWeatherForOneCity(JSONArray coordinates, int index,
-            String language, TelegramClient telegramClient, long chatId, String FUN_NAME) {
+            String language, TelegramClient telegramClient, long chatId) {
         try {
             Double lon = coordinates.getJSONObject(index).getDouble("lon");
             Double lat = coordinates.getJSONObject(index).getDouble("lat");
@@ -56,7 +55,7 @@ public class MessageHandler {
             keyboard.add(row);
             SendTlgMessage.send(telegramClient, chatId, msgText, keyboard);
         } catch (JSONException e) {
-            logger.severe(String.format("%s: Single city: %s", FUN_NAME, e));
+            logger.severe(e.toString());
             SendTlgMessage.sendDefaultError(telegramClient, language, chatId);
         } catch (AppErrorCheckedException e2) {
             SendTlgMessage.sendDefaultError(telegramClient, language, chatId);
@@ -65,8 +64,8 @@ public class MessageHandler {
 
     public void handleMessage() {
         // The only allowed message in this bot is the city name to get the forecast.
-        final String FUN_NAME = "handleMessage";
-        // Get the list of coordinates for the city (or cities if there are multiple with the same
+        // Get the list of coordinates for the city (or cities if there are multiple
+        // with the same
         // name).
         JSONArray coordinates;
         try {
@@ -76,26 +75,24 @@ public class MessageHandler {
             return;
         }
         if (coordinates.length() == 1) {
-            sendCurrentWeatherForOneCity(coordinates, 0, language, telegramClient, chatId,
-                    FUN_NAME);
+            sendCurrentWeatherForOneCity(coordinates, 0, language, telegramClient, chatId);
         } else {
             List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
             for (int i = 0; i < coordinates.length(); i++) {
                 try {
                     JSONObject city = coordinates.getJSONObject(i);
-                    String buttonText =
-                            String.format("%d. %s, %s, %s", i + 1, city.getString("name"),
-                                    city.getString("country"), city.getString("state"));
+                    String buttonText = String.format("%d. %s, %s, %s", i + 1, city.getString("name"),
+                            city.getString("country"), city.getString("state"));
                     InlineKeyboardButton button = InlineKeyboardButton.builder().text(buttonText)
                             .callbackData(String.format("%s%d",
                                     CallbackHandler.CallbackValues.C.name(), i))
                             .build();
-                   
+
                     List<InlineKeyboardButton> row = new ArrayList<>();
                     row.add(button);
                     keyboard.add(row);
                 } catch (JSONException e) {
-                    logger.severe(String.format("%s:%s: %s", CLASS_NAME, FUN_NAME, e));
+                    logger.severe(e.toString());
                     SendTlgMessage.sendDefaultError(telegramClient, language, chatId);
                     return;
                 }
