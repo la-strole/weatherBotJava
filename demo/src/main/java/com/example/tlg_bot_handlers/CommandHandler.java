@@ -121,7 +121,6 @@ public class CommandHandler {
         final long chatID = update.getMessage().getChatId();
         final ResourceBundle rb = DataValidation.getMessages(language);
         try{
-            Database.deleteForecast(chatID);
             boolean currentForecastType = Database.getisFullForecast(chatID);
             Database.insertIsFullForecast(chatID, !currentForecastType);
             String forecastType = currentForecastType

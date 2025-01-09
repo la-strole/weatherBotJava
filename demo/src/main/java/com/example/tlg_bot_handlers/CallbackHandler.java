@@ -3,6 +3,7 @@ package com.example.tlg_bot_handlers;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -10,26 +11,27 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
+
 import com.example.Database;
 import com.example.OpenWeatherApi;
 import com.example.exceptions.AppErrorCheckedException;
 
 public class CallbackHandler {
-    private static final Logger logger = Logger.getLogger(CallbackHandler.class.getName());
-
-    TelegramClient telegramClient;
-    long chatId;
-    String language;
-    String callbackText;
-    Message originalMessage;
-
     public enum CallbackValues {
         F, // Give me the forecast.
         C, // Ci - I choose a city from multiple cities with index i.
         FI, // FIi - Forward and Backward in Forecast index.
     }
 
-    public CallbackHandler(TelegramClient telegramClient, Update update, String language)
+    private static final Logger logger = Logger.getLogger(CallbackHandler.class.getName());
+    TelegramClient telegramClient;
+    long chatId;
+    String language;
+    String callbackText;
+
+    Message originalMessage;
+
+    public CallbackHandler(final TelegramClient telegramClient, final Update update, final String language)
             throws AppErrorCheckedException {
         this.telegramClient = telegramClient;
         callbackText = update.getCallbackQuery().getData();
@@ -37,12 +39,24 @@ public class CallbackHandler {
         this.language = language;
         try {
             originalMessage = (Message) update.getCallbackQuery().getMessage();
-        } catch (Exception e) {
+        } catch (final Exception e) {
             logger.severe(String.format(
                     "Original message inaccessable. chat_id=%d. callback=%s",
                     chatId, callbackText));
             throw new AppErrorCheckedException(
                     " Runtime Error.");
+        }
+    }
+
+    public void callbackHandle() {
+        if (callbackText.startsWith("C")) {
+            callbackMultipleCitiesChoise();
+        } else if (callbackText.equals("F")) {
+            // Handle the forecast request.
+            callbackForecast();
+        } else if (callbackText.startsWith("FI")) {
+            // Handle the forecast index.
+            callbackForecastNavigation();
         }
     }
 
@@ -62,7 +76,7 @@ public class CallbackHandler {
         // Get the city coordinates from the database.
         try {
             citiesCoordinates = Database.getCoordinates(chatId, originalMsgId);
-        } catch (AppErrorCheckedException e) {
+        } catch (final AppErrorCheckedException e) {
             SendTlgMessage.sendDefaultError(telegramClient, language, chatId);
             return;
         }
@@ -80,42 +94,46 @@ public class CallbackHandler {
     private void callbackForecast() {
         double lon;
         double lat;
-        JSONArray resultForecastStringArray;
+       
         try {
             // Get the city coordinates from the original message.
-            String[] lines = originalMessage.getText().split("\n");
+            final String[] lines = originalMessage.getText().split("\n");
             // Get longitude and latitude of the city from the original message.
-            String latLine = lines[lines.length - 1];
-            String lonLine = lines[lines.length - 2];
+            final String latLine = lines[lines.length - 1];
+            final String lonLine = lines[lines.length - 2];
             lat = Double.parseDouble(latLine.split(":")[1].trim());
             lon = Double.parseDouble(lonLine.split(":")[1].trim());
-        } catch (Exception e) {
+        } catch (final Exception e) {
             logger.severe(e.toString());
+            SendTlgMessage.sendDefaultError(telegramClient, language, chatId);
             return;
         }
         try {
             // Get forecast JSON object for coordinates from API.
-            boolean isForecastTypeFull = Database.getisFullForecast(chatId);
-            resultForecastStringArray = OpenWeatherApi.getArrayStringFromJsonWeatherForecast(
-                    OpenWeatherApi.getWeatherForecast(lon, lat, language), isForecastTypeFull, language);
-            // Add forcecast to the database.
+            JSONObject weatherForecast = OpenWeatherApi.getWeatherForecast(lon, lat, language);
+            // Add forecast to the database.
             Database.insertForecast(chatId, originalMessage.getMessageId(),
-                    resultForecastStringArray);
+                    weatherForecast);
+            // Get  forecast type for chat.
+            final boolean isForecastTypeFull = Database.getisFullForecast(chatId);
+            // Parse forecast JSON depend on forecast type.
+            JSONArray resultForecastStringArray = OpenWeatherApi.getArrayStringFromJsonWeatherForecast(
+                    weatherForecast, isForecastTypeFull, language);
             // Edit the original message with the first day forecast.
-            JSONObject forecastFirstDayJSONObject = resultForecastStringArray.getJSONObject(0);
-            String msgText = forecastFirstDayJSONObject.getString(forecastFirstDayJSONObject.keys().next());
-            String dateForward = OpenWeatherApi
+            final JSONObject forecastFirstDayJSONObject = resultForecastStringArray.getJSONObject(0);
+            final String msgText = forecastFirstDayJSONObject.getString(forecastFirstDayJSONObject.keys().next());
+            final String dateForward = OpenWeatherApi
                     .getDayOfMonthFromForecastArray(resultForecastStringArray, 1, language);
-            InlineKeyboardButton button = InlineKeyboardButton.builder()
+            final InlineKeyboardButton button = InlineKeyboardButton.builder()
                     .text(new String(Character.toChars(0x1f449)) + " " + dateForward)
                     .callbackData("FI:1").build(); // FI - forecast index 1
-            List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
-            List<InlineKeyboardButton> row = new ArrayList<>();
+            final List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
+            final List<InlineKeyboardButton> row = new ArrayList<>();
             row.add(button);
             keyboard.add(row);
             SendTlgMessage.editMessagText(telegramClient, originalMessage.getMessageId(), chatId,
                     msgText, keyboard);
-        } catch (AppErrorCheckedException e) {
+        } catch (final AppErrorCheckedException e) {
             logger.severe("Can not complete collback Forecast.");
         }
     }
@@ -123,38 +141,42 @@ public class CallbackHandler {
     private void callbackForecastNavigation() {
 
         // Get the index from the callback data.
-        int index = Integer.parseInt(callbackText.split(":")[1]);
+        final int index = Integer.parseInt(callbackText.split(":")[1]);
         // Get messageId from the original message.
-        int msgId = originalMessage.getMessageId();
+        final int msgId = originalMessage.getMessageId();
         // Get the forecast from the database.
         try {
-            JSONArray forecastArray = Database.getForecast(chatId, msgId);
-            if (forecastArray.isEmpty()) {
-                logger.info(String.format("Failed to get forecast from the database. Chatid=%d", chatId));
+            final JSONObject weatherForecast = Database.getForecast(chatId, msgId);
+            if (weatherForecast.isEmpty()) {
+                logger.info(String.format("Failed to get forecast from the database. Chat id = %d", chatId));
                 SendTlgMessage.sendDefaultError(telegramClient, language, chatId);
                 return;
             }
-            // Get the forecast text from the forecast array.
-            JSONObject forecastSpecificDay = forecastArray.getJSONObject(index);
-            String forecastText = forecastSpecificDay.getString(forecastSpecificDay.keys().next());
+            // Get  forecast type for chat.
+            final boolean isForecastTypeFull = Database.getisFullForecast(chatId);
+            // Parse forecast JSON object depend on forecast type for this chat.
+            JSONArray resultForecastStringArray = OpenWeatherApi.getArrayStringFromJsonWeatherForecast(
+                    weatherForecast, isForecastTypeFull, language);
+            final JSONObject forecastSpecificDay = resultForecastStringArray.getJSONObject(index);
+            final String forecastText = forecastSpecificDay.getString(forecastSpecificDay.keys().next());
             // Get the date forward from the forecast array.
             String dateForward = "";
-            if (index + 1 < forecastArray.length()) {
-                dateForward = OpenWeatherApi.getDayOfMonthFromForecastArray(forecastArray,
+            if (index + 1 < resultForecastStringArray.length()) {
+                dateForward = OpenWeatherApi.getDayOfMonthFromForecastArray(resultForecastStringArray,
                         index + 1, language);
             }
             // Get the date backward from the forecast array.
             String dateBackward = "";
             if (index - 1 >= 0) {
-                dateBackward = OpenWeatherApi.getDayOfMonthFromForecastArray(forecastArray,
+                dateBackward = OpenWeatherApi.getDayOfMonthFromForecastArray(resultForecastStringArray,
                         index - 1, language);
             }
             // Create the keyboard for the forecast index.
-            List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
-            List<InlineKeyboardButton> row = new ArrayList<>();
+            final List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
+            final List<InlineKeyboardButton> row = new ArrayList<>();
             // Create the button for the backward date if it is not empty.
             if (!dateBackward.isEmpty()) {
-                InlineKeyboardButton buttonBackward = InlineKeyboardButton.builder()
+                final InlineKeyboardButton buttonBackward = InlineKeyboardButton.builder()
                         .text(new String(Character.toChars(0x1f448)) + " " + dateBackward)
                         .callbackData(String.format("%s:%d",
                                 CallbackHandler.CallbackValues.FI.name(), index - 1))
@@ -163,7 +185,7 @@ public class CallbackHandler {
             }
             // Create the button for the forward date if it is not empty.
             if (!dateForward.isEmpty()) {
-                InlineKeyboardButton buttonForward = InlineKeyboardButton.builder()
+                final InlineKeyboardButton buttonForward = InlineKeyboardButton.builder()
                         .text(new String(Character.toChars(0x1f449)) + " " + dateForward)
                         .callbackData(String.format("%s:%d",
                                 CallbackHandler.CallbackValues.FI.name(), index + 1))
@@ -178,20 +200,8 @@ public class CallbackHandler {
         } catch (JSONException | UnsupportedOperationException | ClassCastException
                 | NullPointerException | IllegalArgumentException e) {
             logger.severe(e.toString());
-        } catch (AppErrorCheckedException e2) {
-            return;
-        }
-    }
-
-    public void callbackHandle() {
-        if (callbackText.startsWith("C")) {
-            callbackMultipleCitiesChoise();
-        } else if (callbackText.equals("F")) {
-            // Handle the forecast request.
-            callbackForecast();
-        } else if (callbackText.startsWith("FI")) {
-            // Handle the forecast index.
-            callbackForecastNavigation();
+        } catch (final AppErrorCheckedException e2) {
+            logger.info(e2.toString());
         }
     }
 }

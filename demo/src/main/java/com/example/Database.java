@@ -240,7 +240,7 @@ public class Database {
      * @throws AppErrorCheckedException If a database error occurs during the
      *                                  operation.
      */
-    public static void insertForecast(long chatId, long msgId, JSONArray forecast)
+    public static void insertForecast(long chatId, long msgId, JSONObject forecast)
             throws AppErrorCheckedException {
 
         // Check if the coordinates are already in the database
@@ -285,7 +285,7 @@ public class Database {
      * @throws AppErrorCheckedException if there is an error accessing the database
      *                                  or parsing the JSON data
      */
-    public static JSONArray getForecast(long chatId, long msgId) throws AppErrorCheckedException {
+    public static JSONObject getForecast(long chatId, long msgId) throws AppErrorCheckedException {
         String selectSQL = "SELECT forecast FROM forecasts WHERE chatId = ? AND msgId = ?";
         try (Connection conn = DriverManager.getConnection(DATABASE_URL);
                 PreparedStatement selectStmt = conn.prepareStatement(selectSQL)) {
@@ -293,10 +293,10 @@ public class Database {
             selectStmt.setLong(2, msgId);
             ResultSet rs = selectStmt.executeQuery();
             if (rs.next()) {
-                return new JSONArray(rs.getString("forecast"));
+                return new JSONObject(rs.getString("forecast"));
 
             } else {
-                return new JSONArray();
+                return new JSONObject();
             }
         } catch (SQLException | JSONException e) {
             logger.severe(e.toString());
