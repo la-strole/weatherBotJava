@@ -2,6 +2,7 @@ package com.example.tlg_bot_handlers;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.json.JSONArray;
@@ -81,9 +82,8 @@ public class CallbackHandler {
             return;
         }
         if (citiesCoordinates.isEmpty()) {
-            logger.severe(
-                    String.format("Database.getCoordinates() is empty. chatID=%d, msgID=%d",
-                            chatId, originalMsgId));
+            logger.log(Level.SEVERE, () -> String.format("Database.getCoordinates() is empty. chatID=%d, msgID=%d",
+                    chatId, originalMsgId));
             SendTlgMessage.sendDefaultError(telegramClient, language, chatId);
             return;
         }
@@ -94,7 +94,7 @@ public class CallbackHandler {
     private void callbackForecast() {
         double lon;
         double lat;
-       
+
         try {
             // Get the city coordinates from the original message.
             final String[] lines = originalMessage.getText().split("\n");
@@ -114,7 +114,7 @@ public class CallbackHandler {
             // Add forecast to the database.
             Database.insertForecast(chatId, originalMessage.getMessageId(),
                     weatherForecast);
-            // Get  forecast type for chat.
+            // Get forecast type for chat.
             final boolean isForecastTypeFull = Database.getisFullForecast(chatId);
             // Parse forecast JSON depend on forecast type.
             JSONArray resultForecastStringArray = OpenWeatherApi.getArrayStringFromJsonWeatherForecast(
@@ -148,11 +148,12 @@ public class CallbackHandler {
         try {
             final JSONObject weatherForecast = Database.getForecast(chatId, msgId);
             if (weatherForecast.isEmpty()) {
-                logger.info(String.format("Failed to get forecast from the database. Chat id = %d", chatId));
+                logger.log(Level.INFO,
+                        () -> String.format("Failed to get forecast from the database. Chat id = %d", chatId));
                 SendTlgMessage.sendDefaultError(telegramClient, language, chatId);
                 return;
             }
-            // Get  forecast type for chat.
+            // Get forecast type for chat.
             final boolean isForecastTypeFull = Database.getisFullForecast(chatId);
             // Parse forecast JSON object depend on forecast type for this chat.
             JSONArray resultForecastStringArray = OpenWeatherApi.getArrayStringFromJsonWeatherForecast(
