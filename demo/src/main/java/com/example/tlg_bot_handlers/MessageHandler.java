@@ -81,8 +81,9 @@ public class MessageHandler {
             for (int i = 0; i < coordinates.length(); i++) {
                 try {
                     JSONObject city = coordinates.getJSONObject(i);
-                    String buttonText = String.format("%d. %s, %s, %s", i + 1, city.getString("name"),
-                            city.getString("country"), city.getString("state"));
+                    String localCityName = city.getJSONObject("local_names").optString(language, city.getString("name"));
+                    String buttonText = String.format("%d. %s, %s %s", i + 1, localCityName,
+                            city.getString("country"), city.optString("state",""));
                     InlineKeyboardButton button = InlineKeyboardButton.builder().text(buttonText)
                             .callbackData(String.format("%s%d",
                                     CallbackHandler.CallbackValues.C.name(), i))
