@@ -2,7 +2,9 @@ package com.example.tlg_bot_handlers;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ForceReplyKeyboard;
@@ -11,11 +13,18 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
+
 import com.example.DataValidation;
 import com.example.exceptions.AppErrorCheckedException;
 
 public class SendTlgMessage {
     private static final Logger logger = Logger.getLogger(SendTlgMessage.class.getName());
+
+    private SendTlgMessage() {
+        throw new IllegalStateException("Utility class");
+    }
+
+    static final String RUNTIME_ERROR = "Runtime Errror.";
 
     /**
      * Sends a default error message to the specified chat using the provided
@@ -26,15 +35,15 @@ public class SendTlgMessage {
      * @param chatId         The chat ID to send the error message to.
      *
      */
-    public static void sendDefaultError(TelegramClient telegramClient, String language,
-            long chatId) {
+    public static void sendDefaultError(final TelegramClient telegramClient, final String language,
+            final long chatId) {
         try {
-            String messageText = DataValidation.getStringFromResourceBoundle(
+            final String messageText = DataValidation.getStringFromResourceBoundle(
                     DataValidation.getMessages(language), "defaultError");
-            SendMessage msg = SendMessage.builder().chatId(chatId).text(messageText).build();
+            final SendMessage msg = SendMessage.builder().chatId(chatId).text(messageText).build();
             telegramClient.execute(msg);
         } catch (TelegramApiException | AppErrorCheckedException e) {
-            logger.severe("sendDefaultError" + e);
+            logger.log(Level.SEVERE, e::toString);
         }
     }
 
@@ -49,18 +58,18 @@ public class SendTlgMessage {
      * @throws AppErrorCheckedException If an error occurs during the execution of
      *                                  the Telegram API call.
      */
-    public static void send(TelegramClient telegramClient, long chatId, String messageText)
+    public static void send(final TelegramClient telegramClient, final long chatId, final String messageText)
             throws AppErrorCheckedException {
-        SendMessage msg = SendMessage.builder()
+        final SendMessage msg = SendMessage.builder()
                 .chatId(chatId)
                 .parseMode("HTML")
                 .text(messageText)
                 .build();
         try {
             telegramClient.execute(msg);
-        } catch (TelegramApiException e) {
-            logger.severe("send" + e);
-            throw new AppErrorCheckedException("Runtime Error.");
+        } catch (final TelegramApiException e) {
+            logger.log(Level.SEVERE, e::toString);
+            throw new AppErrorCheckedException(RUNTIME_ERROR);
         }
     }
 
@@ -77,96 +86,118 @@ public class SendTlgMessage {
      * @throws AppErrorCheckedException If an error occurs during the execution of
      *                                  the Telegram API call.
      */
-    public static void send(TelegramClient telegramClient, long chatId, String messageText,
-            List<List<InlineKeyboardButton>> keyboard) throws AppErrorCheckedException {
-        List<InlineKeyboardRow> keyboardMarkup = new ArrayList<>();
-        for (List<InlineKeyboardButton> row : keyboard) {
-            InlineKeyboardRow keyboardRow = new InlineKeyboardRow();
-            for (InlineKeyboardButton button : row) {
+    public static void send(final TelegramClient telegramClient, final long chatId, final String messageText,
+            final List<List<InlineKeyboardButton>> keyboard) throws AppErrorCheckedException {
+        final List<InlineKeyboardRow> keyboardMarkup = new ArrayList<>();
+        for (final List<InlineKeyboardButton> row : keyboard) {
+            final InlineKeyboardRow keyboardRow = new InlineKeyboardRow();
+            for (final InlineKeyboardButton button : row) {
                 keyboardRow.add(button);
             }
             try {
                 keyboardMarkup.add(keyboardRow);
             } catch (UnsupportedOperationException | ClassCastException | NullPointerException
                     | IllegalArgumentException e) {
-                logger.severe(e.toString());
-                throw new AppErrorCheckedException("Runtime Error");
+                logger.log(Level.SEVERE, e::toString);
+                throw new AppErrorCheckedException(RUNTIME_ERROR);
             }
         }
-        SendMessage msg = SendMessage.builder().chatId(chatId).text(messageText).parseMode("HTML")
+        final SendMessage msg = SendMessage.builder().chatId(chatId).text(messageText).parseMode("HTML")
                 .replyMarkup(new InlineKeyboardMarkup(keyboardMarkup)).build();
         try {
             telegramClient.execute(msg);
-        } catch (TelegramApiException e) {
-            logger.severe(e.toString());
-            throw new AppErrorCheckedException("Runtime Error");
+        } catch (final TelegramApiException e) {
+            logger.log(Level.SEVERE, e::toString);
+            throw new AppErrorCheckedException(RUNTIME_ERROR);
         }
     }
 
-    public static void sendForceReply(TelegramClient telegramClient, long chatId,
-            String messageText) throws AppErrorCheckedException {
-        SendMessage msg = SendMessage.builder().chatId(chatId).parseMode("HTML").text(messageText)
+    /**
+     * Sends a message with a ForceReply keyboard to a specified chat.
+     *
+     * @param telegramClient the Telegram client used to send the message
+     * @param chatId         the ID of the chat to send the message to
+     * @param messageText    the text of the message to be sent
+     * @throws AppErrorCheckedException if there is an error while sending the
+     *                                  message
+     */
+    public static void sendForceReply(final TelegramClient telegramClient, final long chatId,
+            final String messageText) throws AppErrorCheckedException {
+        final SendMessage msg = SendMessage.builder().chatId(chatId).parseMode("HTML").text(messageText)
                 .replyMarkup(new ForceReplyKeyboard()).build();
         try {
             telegramClient.execute(msg);
-        } catch (TelegramApiException e) {
-            logger.severe("sendForceReply" + e);
+        } catch (final TelegramApiException e) {
+            logger.log(Level.SEVERE, e::toString);
             throw new AppErrorCheckedException(
-                    "Runtime Error.");
+                    RUNTIME_ERROR);
         }
     }
 
-    public static void sendReplyWithKeyboard(TelegramClient telegramClient, long chatId, String messageText,
-            int replyMsgId,
-            List<List<InlineKeyboardButton>> keyboard) throws AppErrorCheckedException {
-        List<InlineKeyboardRow> keyboardMarkup = new ArrayList<>();
-        for (List<InlineKeyboardButton> row : keyboard) {
-            InlineKeyboardRow keyboardRow = new InlineKeyboardRow();
-            for (InlineKeyboardButton button : row) {
+    /**
+     * Sends a reply message with an inline keyboard to a specified chat.
+     *
+     * @param telegramClient the Telegram client used to send the message
+     * @param chatId         the ID of the chat where the message will be sent
+     * @param messageText    the text of the message to be sent
+     * @param replyMsgId     the ID of the message to which this message is a reply
+     * @param keyboard       a list of rows of inline keyboard buttons to be
+     *                       included in the message
+     * @throws AppErrorCheckedException if an error occurs while creating or sending
+     *                                  the message
+     */
+    public static void sendReplyWithKeyboard(final TelegramClient telegramClient, final long chatId,
+            final String messageText,
+            final int replyMsgId,
+            final List<List<InlineKeyboardButton>> keyboard) throws AppErrorCheckedException {
+        final List<InlineKeyboardRow> keyboardMarkup = new ArrayList<>();
+        for (final List<InlineKeyboardButton> row : keyboard) {
+            final InlineKeyboardRow keyboardRow = new InlineKeyboardRow();
+            for (final InlineKeyboardButton button : row) {
                 keyboardRow.add(button);
             }
             try {
                 keyboardMarkup.add(keyboardRow);
             } catch (UnsupportedOperationException | ClassCastException | NullPointerException
                     | IllegalArgumentException e) {
-                logger.severe(e.toString());
-                throw new AppErrorCheckedException("Runtime Error");
+                logger.log(Level.SEVERE, e::toString);
+                throw new AppErrorCheckedException(RUNTIME_ERROR);
             }
         }
-        SendMessage msg = SendMessage.builder().chatId(chatId).text(messageText).parseMode("HTML")
+        final SendMessage msg = SendMessage.builder().chatId(chatId).text(messageText).parseMode("HTML")
                 .replyMarkup(new InlineKeyboardMarkup(keyboardMarkup)).replyToMessageId(replyMsgId).build();
         try {
             telegramClient.execute(msg);
-        } catch (TelegramApiException e) {
-            logger.severe(e.toString());
-            throw new AppErrorCheckedException("Runtime Error");
+        } catch (final TelegramApiException e) {
+            logger.log(Level.SEVERE, e::toString);
+            throw new AppErrorCheckedException(RUNTIME_ERROR);
         }
     }
 
-    public static void editMessagText(TelegramClient telegramClient, int messageId, long chatId,
-            String messageText, List<List<InlineKeyboardButton>> keyboard) throws AppErrorCheckedException {
-        List<InlineKeyboardRow> keyboardMarkup = new ArrayList<>();
-        for (List<InlineKeyboardButton> row : keyboard) {
-            InlineKeyboardRow keyboardRow = new InlineKeyboardRow();
-            for (InlineKeyboardButton button : row) {
+    public static void editMessagText(final TelegramClient telegramClient, final int messageId, final long chatId,
+            final String messageText, final List<List<InlineKeyboardButton>> keyboard) throws AppErrorCheckedException {
+        final List<InlineKeyboardRow> keyboardMarkup = new ArrayList<>();
+        for (final List<InlineKeyboardButton> row : keyboard) {
+            final InlineKeyboardRow keyboardRow = new InlineKeyboardRow();
+            for (final InlineKeyboardButton button : row) {
                 keyboardRow.add(button);
             }
             try {
                 keyboardMarkup.add(keyboardRow);
             } catch (UnsupportedOperationException | ClassCastException | NullPointerException
                     | IllegalArgumentException e) {
-                logger.severe(e.toString());
-                throw new AppErrorCheckedException("Runtime Error");
+                logger.log(Level.SEVERE, e::toString);
+                throw new AppErrorCheckedException(RUNTIME_ERROR);
             }
         }
-        EditMessageText msg = EditMessageText.builder().chatId(chatId).messageId(messageId)
+        final EditMessageText msg = EditMessageText.builder().chatId(chatId).messageId(messageId)
                 .text(messageText).parseMode("HTML")
                 .replyMarkup(new InlineKeyboardMarkup(keyboardMarkup)).build();
         try {
             telegramClient.execute(msg);
-        } catch (TelegramApiException e) {
-            logger.severe(e.toString());
-            throw new AppErrorCheckedException("Runtime Error");
+        } catch (final TelegramApiException e) {
+            logger.log(Level.SEVERE, e::toString);
+            throw new AppErrorCheckedException(RUNTIME_ERROR);
         }
     }
 }
