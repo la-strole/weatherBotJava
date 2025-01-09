@@ -5,12 +5,14 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
+
 import com.example.DataValidation;
 import com.example.Database;
 import com.example.exceptions.AppErrorCheckedException;
@@ -29,11 +31,39 @@ public class CommandHandler {
         logger.setLevel(Level.FINE);
     }
 
+    public void handleCommand() {
+        final String command = update.getMessage().getEntities().get(0).getText();
+        switch (command) {
+            case "/start": {
+                handleCommandStart();
+                break;
+            }
+            case "/help": {
+                handleCommandHelp();
+                break;
+            }
+            case "/settings": {
+                // Get chatId from message.
+                handleCommandSettings();
+                break;
+            }
+            case "/settings_add_city": {
+                handleCommandSettingsAddCity();
+                break;
+            }
+            case "/change_forecast_type": {
+                handleCommandChangeForecastType();
+                break;
+            }
+            default:
+                handleCommandDefault();
+        }
+    }
+
     private void handleCommandStart() {
         // Create bot commands.
         final List<BotCommand> commandsList = new ArrayList<>();
         final ResourceBundle rb = DataValidation.getMessages(language);
-        logger.fine(String.format("Language defined as %s", language));
         final long chatId = update.getMessage().getChatId();
 
         try {
@@ -98,7 +128,7 @@ public class CommandHandler {
         // Send message
         try {
             SendTlgMessage.send(telegramClient, chatId, msgText);
-        } catch (AppErrorCheckedException e) {
+        } catch (final AppErrorCheckedException e) {
             logger.severe("CommandHandler:HandleCommandSettings: " + e);
         }
     }
@@ -120,16 +150,17 @@ public class CommandHandler {
         // Get current forecast type from the database
         final long chatID = update.getMessage().getChatId();
         final ResourceBundle rb = DataValidation.getMessages(language);
-        try{
-            boolean currentForecastType = Database.getisFullForecast(chatID);
+        try {
+            final boolean currentForecastType = Database.getisFullForecast(chatID);
             Database.insertIsFullForecast(chatID, !currentForecastType);
-            String forecastType = currentForecastType
+            final String forecastType = currentForecastType
                     ? DataValidation.getStringFromResourceBoundle(rb, "ForecastTypeShort")
                     : DataValidation.getStringFromResourceBoundle(rb, "ForecastTypeFull");
-            String msgText = DataValidation.getStringFromResourceBoundle(rb, "settingsCommandChangeForecastTypeAnswer")
+            final String msgText = DataValidation.getStringFromResourceBoundle(rb,
+                    "settingsCommandChangeForecastTypeAnswer")
                     + " " + forecastType;
             SendTlgMessage.send(telegramClient, chatID, msgText);
-        } catch (AppErrorCheckedException e){
+        } catch (final AppErrorCheckedException e) {
             SendTlgMessage.sendDefaultError(telegramClient, language, chatID);
         }
     }
@@ -145,37 +176,8 @@ public class CommandHandler {
         }
         try {
             SendTlgMessage.send(telegramClient, chatId, msgText);
-        } catch (AppErrorCheckedException e) {
+        } catch (final AppErrorCheckedException e) {
             logger.severe("CommandHandler:handleCommandDefault: " + e);
-        }
-    }
-
-    public void handleCommand() {
-        final String command = update.getMessage().getEntities().get(0).getText();
-        switch (command) {
-            case "/start": {
-                handleCommandStart();
-                break;
-            }
-            case "/help": {
-                handleCommandHelp();
-                break;
-            }
-            case "/settings": {
-                // Get chatId from message.
-                handleCommandSettings();
-                break;
-            }
-            case "/settings_add_city": {
-                handleCommandSettingsAddCity();
-                break;
-            }
-            case "/change_forecast_type": {
-                handleCommandChangeForecastType();
-                break;
-            }
-            default:
-                handleCommandDefault();
         }
     }
 }
