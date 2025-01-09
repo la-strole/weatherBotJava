@@ -15,6 +15,7 @@ import com.example.Database;
 import com.example.GeocodingApi;
 import com.example.OpenWeatherApi;
 import com.example.exceptions.AppErrorCheckedException;
+import com.example.exceptions.AppErrorException;
 
 public class MessageHandler {
     private static final Logger logger = Logger.getLogger(MessageHandler.class.getName());
@@ -71,7 +72,12 @@ public class MessageHandler {
         try {
             coordinates = GeocodingApi.getCitiesCoordinatesArray(cityName);
         } catch (AppErrorCheckedException e) {
-            SendTlgMessage.sendDefaultError(telegramClient, language, chatId);
+            try{
+                String msgText = DataValidation.getStringFromResourceBoundle(DataValidation.getMessages(language), "invalidCityName");
+                SendTlgMessage.send(telegramClient, chatId, msgText);
+            } catch (AppErrorCheckedException e2){
+                SendTlgMessage.sendDefaultError(telegramClient, language, chatId);
+            }
             return;
         }
         if (coordinates.length() == 1) {
@@ -81,8 +87,8 @@ public class MessageHandler {
             for (int i = 0; i < coordinates.length(); i++) {
                 try {
                     JSONObject city = coordinates.getJSONObject(i);
-                    String localCityName = city.getJSONObject("local_names").optString(language, city.getString("name"));
-                    String buttonText = String.format("%d. %s, %s %s", i + 1, localCityName,
+                    
+                    String buttonText = String.format("%d. %s, %s %s", i + 1, city.getString("name"),
                             city.getString("country"), city.optString("state",""));
                     InlineKeyboardButton button = InlineKeyboardButton.builder().text(buttonText)
                             .callbackData(String.format("%s%d",

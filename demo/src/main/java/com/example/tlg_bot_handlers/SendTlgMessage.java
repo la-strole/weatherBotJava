@@ -17,6 +17,14 @@ import com.example.exceptions.AppErrorCheckedException;
 public class SendTlgMessage {
     private static final Logger logger = Logger.getLogger(SendTlgMessage.class.getName());
 
+    /**
+     * Sends a default error message to the specified chat using the provided Telegram client.
+     *
+     * @param telegramClient The Telegram client used to send the message.
+     * @param language The language of the error message.
+     * @param chatId The chat ID to send the error message to.
+     *
+     */
     public static void sendDefaultError(TelegramClient telegramClient, String language,
             long chatId) {
         try {
@@ -27,7 +35,6 @@ public class SendTlgMessage {
         } catch (TelegramApiException | AppErrorCheckedException e) {
             logger.severe("sendDefaultError" + e);
         }
-
     }
 
     public static void send(TelegramClient telegramClient, long chatId, String messageText)

@@ -308,8 +308,8 @@ public class OpenWeatherApi {
             JSONObject sys = currentWeather.getJSONObject("sys");
             long sunrise = (long) sys.getInt("sunrise") + timezone;
             long sunset = (long) sys.getInt("sunset") + timezone;
-            String lon = currentWeather.getJSONObject("coord").getString("lon");
-            String lat = currentWeather.getJSONObject("coord").getString("lat");
+            String lon = String.format("%f", currentWeather.getJSONObject("coord").getFloat("lon"));
+            String lat = String.format("%f", currentWeather.getJSONObject("coord").getFloat("lat"));
 
             result.append(String.format("<b>%s %s</b>%n",
                     DataValidation.getStringFromResourceBoundle(rb, "currentWeatherIn"), city));
@@ -324,11 +324,13 @@ public class OpenWeatherApi {
                     DataValidation.getStringFromResourceBoundle(rb, "hPa")));
             if (!humidity.isEmpty()) {
                 result.append(String.format("<b>%s:</b> %s%s%n",
-                        DataValidation.getStringFromResourceBoundle(rb, "humidity"), humidity, "%"));
+                        DataValidation.getStringFromResourceBoundle(rb, "humidity"), humidity,
+                        "%"));
             }
             if (!visibility.isEmpty()) {
                 result.append(String.format("<b>%s:</b> %s%s%n",
-                        DataValidation.getStringFromResourceBoundle(rb, "visibility"), visibility,
+                        DataValidation.getStringFromResourceBoundle(rb, "visibility"),
+                        visibility,
                         DataValidation.getStringFromResourceBoundle(rb, "m")));
             }
             if (!windSpeed.isEmpty()) {
@@ -338,7 +340,8 @@ public class OpenWeatherApi {
             }
             if (!windDeg.isEmpty()) {
                 result.append(String.format("<b>%s:</b> %s°%n",
-                        DataValidation.getStringFromResourceBoundle(rb, "windDirection"), windDeg));
+                        DataValidation.getStringFromResourceBoundle(rb, "windDirection"),
+                        windDeg));
             }
             if (!gust.isEmpty()) {
                 result.append(String.format("<b>%s:</b> %s%s%n",
@@ -347,7 +350,8 @@ public class OpenWeatherApi {
             }
             if (!clouds.isEmpty()) {
                 result.append(String.format("<b>%s:</b> %s%s%n",
-                        DataValidation.getStringFromResourceBoundle(rb, "cloudiness"), clouds, "%"));
+                        DataValidation.getStringFromResourceBoundle(rb, "cloudiness"), clouds,
+                        "%"));
             }
             if (!rainmmh.isEmpty()) {
                 result.append(String.format("<b>%s:</b> %s%s%n",
@@ -444,11 +448,13 @@ public class OpenWeatherApi {
             }
             if (!humidity.isEmpty()) {
                 result.append(String.format("\t<b>%s:</b> %s%s%n",
-                        DataValidation.getStringFromResourceBoundle(rb, "humidity"), humidity, "%"));
+                        DataValidation.getStringFromResourceBoundle(rb, "humidity"), humidity,
+                        "%"));
             }
             if (!visibility.isEmpty()) {
                 result.append(String.format("\t<b>%s:</b> %s%s%n",
-                        DataValidation.getStringFromResourceBoundle(rb, "visibility"), visibility,
+                        DataValidation.getStringFromResourceBoundle(rb, "visibility"),
+                        visibility,
                         DataValidation.getStringFromResourceBoundle(rb, "m")));
             }
             if (!windSpeed.isEmpty()) {
@@ -458,7 +464,8 @@ public class OpenWeatherApi {
             }
             if (!windDeg.isEmpty()) {
                 result.append(String.format("\t<b>%s:</b> %s°%n",
-                        DataValidation.getStringFromResourceBoundle(rb, "windDirection"), windDeg));
+                        DataValidation.getStringFromResourceBoundle(rb, "windDirection"),
+                        windDeg));
             }
             if (!gust.isEmpty()) {
                 result.append(String.format("\t<b>%s:</b> %s %s%n",
@@ -467,7 +474,8 @@ public class OpenWeatherApi {
             }
             if (!clouds.isEmpty()) {
                 result.append(String.format("\t<b>%s:</b> %s%s%n",
-                        DataValidation.getStringFromResourceBoundle(rb, "cloudiness"), clouds, "%"));
+                        DataValidation.getStringFromResourceBoundle(rb, "cloudiness"), clouds,
+                        "%"));
             }
             if (!rainmmh.isEmpty()) {
                 result.append(String.format("\t<b>%s:</b> %s %s%n",
