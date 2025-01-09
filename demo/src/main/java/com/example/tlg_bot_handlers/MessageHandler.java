@@ -29,12 +29,13 @@ public class MessageHandler {
         this.update = update;
         chatId = update.getMessage().getChatId();
         cityName = update.getMessage().getText();
+        this.language = language;
         if (!DataValidation.isCityNameValid(cityName)) {
             logger.severe(
                     String.format("MessageHandler: The city name is not valid: %s", cityName));
             SendTlgMessage.sendDefaultError(telegramClient, language, chatId);
         }
-        this.language = language;
+        
         logger.setLevel(Level.FINE);
     }
 
@@ -65,8 +66,7 @@ public class MessageHandler {
     public void handleMessage() {
         // The only allowed message in this bot is the city name to get the forecast.
         // Get the list of coordinates for the city (or cities if there are multiple
-        // with the same
-        // name).
+        // with the same name).
         JSONArray coordinates;
         try {
             coordinates = GeocodingApi.getCitiesCoordinatesArray(cityName);
@@ -100,7 +100,8 @@ public class MessageHandler {
             try {
                 String msgText = DataValidation.getStringFromResourceBoundle(
                         DataValidation.getMessages(language), "multipleCities");
-                SendTlgMessage.send(telegramClient, chatId, msgText, keyboard);
+                SendTlgMessage.sendReplyWithKeyboard(telegramClient, chatId, msgText,
+                        update.getMessage().getMessageId(), keyboard);
                 // Add multiple cities to the database.
                 Database.insertCities(chatId, update.getMessage().getMessageId(), coordinates);
             } catch (AppErrorCheckedException e) {

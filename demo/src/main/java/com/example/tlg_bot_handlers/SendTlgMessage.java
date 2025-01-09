@@ -81,6 +81,33 @@ public class SendTlgMessage {
         }
     }
 
+    public static void sendReplyWithKeyboard(TelegramClient telegramClient, long chatId, String messageText, int replyMsgId,
+            List<List<InlineKeyboardButton>> keyboard) throws AppErrorCheckedException {
+        final String FUN_NAME = "send with keyboard";
+        List<InlineKeyboardRow> keyboardMarkup = new ArrayList<>();
+        for (List<InlineKeyboardButton> row : keyboard) {
+            InlineKeyboardRow keyboardRow = new InlineKeyboardRow();
+            for (InlineKeyboardButton button : row) {
+                keyboardRow.add(button);
+            }
+            try {
+                keyboardMarkup.add(keyboardRow);
+            } catch (UnsupportedOperationException | ClassCastException | NullPointerException
+                    | IllegalArgumentException e) {
+                logger.severe(e.toString());
+                throw new AppErrorCheckedException("Runtime Error");
+            }
+        }
+        SendMessage msg = SendMessage.builder().chatId(chatId).text(messageText).parseMode("HTML")
+                .replyMarkup(new InlineKeyboardMarkup(keyboardMarkup)).replyToMessageId(replyMsgId).build();
+        try {
+            telegramClient.execute(msg);
+        } catch (TelegramApiException e) {
+            logger.severe(e.toString());
+            throw new AppErrorCheckedException("Runtime Error");
+        }
+    }
+
     public static void editMessagText(TelegramClient telegramClient, int messageId, long chatId,
             String messageText, List<List<InlineKeyboardButton>> keyboard) throws AppErrorCheckedException {
         final String FUN_NAME = "edit";

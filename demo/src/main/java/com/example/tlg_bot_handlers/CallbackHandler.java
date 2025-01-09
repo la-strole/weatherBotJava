@@ -34,6 +34,7 @@ public class CallbackHandler {
         this.telegramClient = telegramClient;
         callbackText = update.getCallbackQuery().getData();
         chatId = update.getCallbackQuery().getMessage().getChatId();
+        this.language = language;
         try {
             originalMessage = (Message) update.getCallbackQuery().getMessage();
         } catch (Exception e) {
@@ -135,11 +136,17 @@ public class CallbackHandler {
             JSONObject forecastSpecificDay = forecastArray.getJSONObject(index);
             String forecastText = forecastSpecificDay.getString(forecastSpecificDay.keys().next());
             // Get the date forward from the forecast array.
-            String dateForward = OpenWeatherApi.getDayOfMonthFromForecastArray(forecastArray,
-                    index + 1, language);
+            String dateForward = "";
+            if (index + 1 < forecastArray.length()){ 
+                dateForward = OpenWeatherApi.getDayOfMonthFromForecastArray(forecastArray,
+                        index + 1, language);
+            }
             // Get the date backward from the forecast array.
-            String dateBackward = OpenWeatherApi.getDayOfMonthFromForecastArray(forecastArray,
-                    index - 1, language);
+            String dateBackward = "";
+            if (index - 1 >= 0 ){
+                dateBackward = OpenWeatherApi.getDayOfMonthFromForecastArray(forecastArray,
+                        index - 1, language);
+            }
             // Create the keyboard for the forecast index.
             List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
             List<InlineKeyboardButton> row = new ArrayList<>();

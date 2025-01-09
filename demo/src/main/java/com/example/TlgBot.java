@@ -9,35 +9,41 @@ import com.example.tlg_bot_handlers.CommandHandler;
 import com.example.tlg_bot_handlers.MessageHandler;
 import com.example.exceptions.AppErrorCheckedException;
 import com.example.tlg_bot_handlers.CallbackHandler;
-
+import java.util.logging.Logger;
 
 public class TlgBot implements LongPollingSingleThreadUpdateConsumer {
 
     private final TelegramClient telegramClient;
+    private static final Logger logger = Logger.getLogger(TlgBot.class.getName());
 
     public TlgBot(String botToken) {
         telegramClient = new OkHttpTelegramClient(botToken);
     }
 
-  
     @Override
     public void consume(Update update) {
+
         // Get user's language.
         String language = update.hasMessage() ? update.getMessage().getFrom().getLanguageCode()
                 : update.getCallbackQuery().getFrom().getLanguageCode();
+
+        if (language == null) {
+            logger.info("Language is not available for user ");
+            language = "en";
+        }
 
         // If the update is a command.
         if (update.hasMessage() && update.getMessage().isCommand()) {
             CommandHandler ch = new CommandHandler(telegramClient, update, language);
             ch.handleCommand();
-        // If the update is a message.
+            // If the update is a message.
         } else if (update.hasMessage() && update.getMessage().hasText()
                 && !update.getMessage().isReply()) {
             MessageHandler mh = new MessageHandler(telegramClient, update, language);
             mh.handleMessage();
-        // If the update is a callback query.
+            // If the update is a callback query.
         } else if (update.hasCallbackQuery()) {
-            try{
+            try {
                 CallbackHandler cbh = new CallbackHandler(telegramClient, update, language);
                 cbh.callbackHandle();
             } catch (AppErrorCheckedException e) {

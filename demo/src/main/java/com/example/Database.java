@@ -8,7 +8,7 @@ import java.sql.SQLException;
 import java.sql.ResultSet;
 import java.time.Instant;
 import java.util.logging.Logger;
-import javax.management.RuntimeErrorException;
+import java.util.logging.Level;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -48,6 +48,9 @@ public class Database {
     public static final String DATABASE_URL = "jdbc:sqlite:database.db";
 
     private static final Logger logger = Logger.getLogger(Database.class.getName());
+    static {
+        logger.setLevel(Level.FINE);
+    }
 
     /**
      * Checks if a given chat ID exists in the specified table.
@@ -59,7 +62,7 @@ public class Database {
      */
     private static boolean ifChatIdInDb(long chatId, String tableName)
             throws AppErrorCheckedException {
-        String selectSQL = "";
+        String selectSQL;
         if (DataValidation.isTableNameValid(tableName)) {
             selectSQL = "SELECT chatId FROM " + tableName + " WHERE chatId = ?";
         } else {
@@ -139,7 +142,7 @@ public class Database {
             throws AppErrorCheckedException {
 
         // Check if the coordinates are already in the database
-        if (ifChatIdInDb(chatId, "multipleCities")) {
+        if (!ifChatIdInDb(chatId, "multipleCities")) {
             String insertSQL =
                     "INSERT INTO multipleCities (chatId, msgId, coordinates, created_at) VALUES (?, ?, ?, ?)";
             try (Connection conn = DriverManager.getConnection(DATABASE_URL);
@@ -149,7 +152,7 @@ public class Database {
                 insertStmt.setString(3, citiesCoordinates.toString());
                 insertStmt.setString(4, Instant.now().toString());
                 insertStmt.executeUpdate();
-
+                logger.fine("Insert multiple cities coordinates into database");
             } catch (SQLException e) {
                 logger.severe("insertCities:\tE" + e);
                 throw new AppErrorCheckedException("Database:insertCities: Runtime Error.");
@@ -164,7 +167,7 @@ public class Database {
                 updateStmt.setString(3, Instant.now().toString());
                 updateStmt.setLong(4, chatId);
                 updateStmt.executeUpdate();
-
+                logger.fine("Updated multiple cities in database");
             } catch (SQLException e) {
                 logger.severe("insertCities:\tE1" + e);
                 throw new AppErrorCheckedException("Database:insertCities: Runtime Error.");
