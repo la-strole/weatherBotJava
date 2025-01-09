@@ -33,6 +33,7 @@ public class CommandHandler {
         // Create bot commands.
         final List<BotCommand> commandsList = new ArrayList<>();
         final ResourceBundle rb = DataValidation.getMessages(language);
+        logger.fine(String.format("Language defined as %s", language));
         final long chatId = update.getMessage().getChatId();
 
         try {
@@ -84,7 +85,7 @@ public class CommandHandler {
             if (!subscriptionString.isEmpty()) {
                 msgText = DataValidation.getStringFromResourceBoundle(rb, "settingsCommandAnswer")
                         + "\n" + subscriptionString;
-            // If the subscriptions list is empty.
+                // If the subscriptions list is empty.
             } else {
                 msgText = DataValidation.getStringFromResourceBoundle(rb,
                         "settingsCommandEmptyAnswer");
@@ -94,7 +95,7 @@ public class CommandHandler {
             return;
         }
         // Send message
-        try{
+        try {
             SendTlgMessage.send(telegramClient, chatId, msgText);
         } catch (AppErrorCheckedException e) {
             logger.severe("CommandHandler:HandleCommandSettings: " + e);
@@ -123,9 +124,9 @@ public class CommandHandler {
         } catch (final AppErrorCheckedException e) {
             msgText = "Invalid command";
         }
-        try{
-        SendTlgMessage.send(telegramClient, chatId, msgText);
-        } catch (AppErrorCheckedException e){
+        try {
+            SendTlgMessage.send(telegramClient, chatId, msgText);
+        } catch (AppErrorCheckedException e) {
             logger.severe("CommandHandler:handleCommandDefault: " + e);
         }
     }

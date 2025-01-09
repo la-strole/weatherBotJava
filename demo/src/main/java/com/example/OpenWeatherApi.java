@@ -274,34 +274,42 @@ public class OpenWeatherApi {
             JSONArray weather = currentWeather.getJSONArray("weather");
             String description = weather.getJSONObject(0).getString("description");
             JSONObject main = currentWeather.getJSONObject("main");
-            String currentTemp = main.get("temp").toString();
-            String feelsLike = main.get("feels_like").toString();
-            String humidity = main.get("humidity").toString();
-            String preasure = main.get("grnd_level").toString();
-            String visibility = currentWeather.get("visibility").toString();
-            JSONObject wind = currentWeather.getJSONObject("wind");
-            String windSpeed = wind.get("speed").toString();
-            String windDeg = wind.get("deg").toString();
-            String gust = wind.optString("gust", "");
-            JSONObject cloudsJson = currentWeather.getJSONObject("clouds");
-            String clouds = cloudsJson.get("all").toString();
+            String currentTemp = String.format("%d", Math.round(main.getFloat("temp")));
+            String feelsLike = String.format("%d", Math.round(main.getFloat("feels_like")));
+            String humidity = main.optString("humidity", "");
+            String preasure = main.optString("grnd_level", "");
+            String visibility = currentWeather.optString("visibility", "");
+            JSONObject wind = currentWeather.optJSONObject("wind");
+            String windSpeed = "";
+            String windDeg = "";
+            String gust = "";
+            if (wind != null) {
+                windSpeed = wind.optString("speed", "");
+                windDeg = wind.optString("deg", "");
+                gust = wind.optString("gust", "");
+            }
+            JSONObject cloudsJson = currentWeather.optJSONObject("clouds");
+            String clouds = "";
+            if (cloudsJson != null) {
+                clouds = cloudsJson.optString("all", "");
+            }
             JSONObject rain = currentWeather.optJSONObject("rain");
             String rainmmh = "";
             if (rain != null) {
-                rainmmh = rain.get("1h").toString();
+                rainmmh = rain.getString("1h");
             }
             JSONObject snow = currentWeather.optJSONObject("snow");
             String snowmmh = "";
             if (snow != null) {
-                snowmmh = snow.get("1h").toString();
+                snowmmh = snow.getString("1h");
             }
             int timezone = currentWeather.getInt("timezone");
             String city = currentWeather.getString("name");
             JSONObject sys = currentWeather.getJSONObject("sys");
             long sunrise = (long) sys.getInt("sunrise") + timezone;
             long sunset = (long) sys.getInt("sunset") + timezone;
-            String lon = currentWeather.getJSONObject("coord").get("lon").toString();
-            String lat = currentWeather.getJSONObject("coord").get("lat").toString();
+            String lon = currentWeather.getJSONObject("coord").getString("lon");
+            String lat = currentWeather.getJSONObject("coord").getString("lat");
 
             result.append(String.format("<b>%s %s</b>%n",
                     DataValidation.getStringFromResourceBoundle(rb, "currentWeatherIn"), city));
@@ -314,23 +322,33 @@ public class OpenWeatherApi {
             result.append(String.format("<b>%s:</b> %s%s%n",
                     DataValidation.getStringFromResourceBoundle(rb, "pressure"), preasure,
                     DataValidation.getStringFromResourceBoundle(rb, "hPa")));
-            result.append(String.format("<b>%s:</b> %s%s%n",
-                    DataValidation.getStringFromResourceBoundle(rb, "humidity"), humidity, "%"));
-            result.append(String.format("<b>%s:</b> %s%s%n",
-                    DataValidation.getStringFromResourceBoundle(rb, "visibility"), visibility,
-                    DataValidation.getStringFromResourceBoundle(rb, "m")));
-            result.append(String.format("<b>%s:</b> %s%s%n",
-                    DataValidation.getStringFromResourceBoundle(rb, "windSpeed"), windSpeed,
-                    DataValidation.getStringFromResourceBoundle(rb, "ms")));
-            result.append(String.format("<b>%s:</b> %s°%n",
-                    DataValidation.getStringFromResourceBoundle(rb, "windDirection"), windDeg));
+            if (!humidity.isEmpty()) {
+                result.append(String.format("<b>%s:</b> %s%s%n",
+                        DataValidation.getStringFromResourceBoundle(rb, "humidity"), humidity, "%"));
+            }
+            if (!visibility.isEmpty()) {
+                result.append(String.format("<b>%s:</b> %s%s%n",
+                        DataValidation.getStringFromResourceBoundle(rb, "visibility"), visibility,
+                        DataValidation.getStringFromResourceBoundle(rb, "m")));
+            }
+            if (!windSpeed.isEmpty()) {
+                result.append(String.format("<b>%s:</b> %s%s%n",
+                        DataValidation.getStringFromResourceBoundle(rb, "windSpeed"), windSpeed,
+                        DataValidation.getStringFromResourceBoundle(rb, "ms")));
+            }
+            if (!windDeg.isEmpty()) {
+                result.append(String.format("<b>%s:</b> %s°%n",
+                        DataValidation.getStringFromResourceBoundle(rb, "windDirection"), windDeg));
+            }
             if (!gust.isEmpty()) {
                 result.append(String.format("<b>%s:</b> %s%s%n",
                         DataValidation.getStringFromResourceBoundle(rb, "windGust"), gust,
                         DataValidation.getStringFromResourceBoundle(rb, "ms")));
             }
-            result.append(String.format("<b>%s:</b> %s%s%n",
-                    DataValidation.getStringFromResourceBoundle(rb, "cloudiness"), clouds, "%"));
+            if (!clouds.isEmpty()) {
+                result.append(String.format("<b>%s:</b> %s%s%n",
+                        DataValidation.getStringFromResourceBoundle(rb, "cloudiness"), clouds, "%"));
+            }
             if (!rainmmh.isEmpty()) {
                 result.append(String.format("<b>%s:</b> %s%s%n",
                         DataValidation.getStringFromResourceBoundle(rb, "rain"), rainmmh,
@@ -383,16 +401,24 @@ public class OpenWeatherApi {
                                                     + timezone))));
             String visibility = forecast.optString("visibility", "");
             JSONObject main = forecast.getJSONObject("main");
-            String temp = main.get("temp").toString();
-            String feelsLike = main.get("feels_like").toString();
-            String humidity = main.get("humidity").toString();
-            String pressure = main.get("grnd_level").toString();
-            JSONObject wind = forecast.getJSONObject("wind");
-            String windSpeed = wind.get("speed").toString();
-            String windDeg = wind.get("deg").toString();
-            String gust = wind.optString("gust", "");
-            JSONObject cloudsJson = forecast.getJSONObject("clouds");
-            String clouds = cloudsJson.get("all").toString();
+            String temp = String.format("%d", Math.round(main.getFloat("temp")));
+            String feelsLike = String.format("%d", Math.round(main.getFloat("feels_like")));
+            String humidity = main.optString("humidity", "");
+            String pressure = main.optString("grnd_level", "");
+            JSONObject wind = forecast.optJSONObject("wind");
+            String windSpeed = "";
+            String windDeg = "";
+            String gust = "";
+            if (wind != null) {
+                windSpeed = wind.optString("speed", "");
+                windDeg = wind.optString("deg", "");
+                gust = wind.optString("gust", "");
+            }
+            JSONObject cloudsJson = forecast.optJSONObject("clouds");
+            String clouds = "";
+            if (cloudsJson != null) {
+                clouds = cloudsJson.optString("all", "");
+            }
             JSONObject weather = forecast.getJSONArray("weather").getJSONObject(0);
             String description = weather.getString("description");
             JSONObject rain = forecast.optJSONObject("rain");
@@ -411,26 +437,38 @@ public class OpenWeatherApi {
                     DataValidation.getStringFromResourceBoundle(rb, "temperature"), temp));
             result.append(String.format("\t<b>%s:</b> %s°C%n",
                     DataValidation.getStringFromResourceBoundle(rb, "feelsLike"), feelsLike));
-            result.append(String.format("\t<b>%s:</b> %s %s%n",
-                    DataValidation.getStringFromResourceBoundle(rb, "pressure"), pressure,
-                    DataValidation.getStringFromResourceBoundle(rb, "hPa")));
-            result.append(String.format("\t<b>%s:</b> %s%s%n",
-                    DataValidation.getStringFromResourceBoundle(rb, "humidity"), humidity, "%"));
-            result.append(String.format("\t<b>%s:</b> %s%s%n",
-                    DataValidation.getStringFromResourceBoundle(rb, "visibility"), visibility,
-                    DataValidation.getStringFromResourceBoundle(rb, "m")));
-            result.append(String.format("\t<b>%s:</b> %s %s%n",
-                    DataValidation.getStringFromResourceBoundle(rb, "windSpeed"), windSpeed,
-                    DataValidation.getStringFromResourceBoundle(rb, "ms")));
-            result.append(String.format("\t<b>%s:</b> %s°%n",
-                    DataValidation.getStringFromResourceBoundle(rb, "windDirection"), windDeg));
+            if (!pressure.isEmpty()) {
+                result.append(String.format("\t<b>%s:</b> %s %s%n",
+                        DataValidation.getStringFromResourceBoundle(rb, "pressure"), pressure,
+                        DataValidation.getStringFromResourceBoundle(rb, "hPa")));
+            }
+            if (!humidity.isEmpty()) {
+                result.append(String.format("\t<b>%s:</b> %s%s%n",
+                        DataValidation.getStringFromResourceBoundle(rb, "humidity"), humidity, "%"));
+            }
+            if (!visibility.isEmpty()) {
+                result.append(String.format("\t<b>%s:</b> %s%s%n",
+                        DataValidation.getStringFromResourceBoundle(rb, "visibility"), visibility,
+                        DataValidation.getStringFromResourceBoundle(rb, "m")));
+            }
+            if (!windSpeed.isEmpty()) {
+                result.append(String.format("\t<b>%s:</b> %s %s%n",
+                        DataValidation.getStringFromResourceBoundle(rb, "windSpeed"), windSpeed,
+                        DataValidation.getStringFromResourceBoundle(rb, "ms")));
+            }
+            if (!windDeg.isEmpty()) {
+                result.append(String.format("\t<b>%s:</b> %s°%n",
+                        DataValidation.getStringFromResourceBoundle(rb, "windDirection"), windDeg));
+            }
             if (!gust.isEmpty()) {
                 result.append(String.format("\t<b>%s:</b> %s %s%n",
                         DataValidation.getStringFromResourceBoundle(rb, "windGust"), gust,
                         DataValidation.getStringFromResourceBoundle(rb, "ms")));
             }
-            result.append(String.format("\t<b>%s:</b> %s%s%n",
-                    DataValidation.getStringFromResourceBoundle(rb, "cloudiness"), clouds, "%"));
+            if (!clouds.isEmpty()) {
+                result.append(String.format("\t<b>%s:</b> %s%s%n",
+                        DataValidation.getStringFromResourceBoundle(rb, "cloudiness"), clouds, "%"));
+            }
             if (!rainmmh.isEmpty()) {
                 result.append(String.format("\t<b>%s:</b> %s %s%n",
                         DataValidation.getStringFromResourceBoundle(rb, "rain"), rainmmh,
