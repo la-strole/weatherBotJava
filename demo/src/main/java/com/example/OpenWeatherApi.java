@@ -391,7 +391,8 @@ public class OpenWeatherApi {
      * @return a formatted string with weather details
      * @throws AppErrorCheckedException if there is an error parsing the JSON object
      */
-    private static String parseForcastListItem(JSONObject forecast, int timezone, String language)
+    private static String parseForcastListItem(JSONObject forecast, int timezone, boolean isForecastTypeFull,
+            String language)
             throws AppErrorCheckedException {
         final ResourceBundle rb = DataValidation.getMessages(language);
         StringBuilder result = new StringBuilder();
@@ -439,40 +440,43 @@ public class OpenWeatherApi {
                     DataValidation.getStringFromResourceBoundle(rb, "description"), description));
             result.append(String.format("\t<b>%s:</b> %s°C%n",
                     DataValidation.getStringFromResourceBoundle(rb, "temperature"), temp));
-            result.append(String.format("\t<b>%s:</b> %s°C%n",
-                    DataValidation.getStringFromResourceBoundle(rb, "feelsLike"), feelsLike));
-            if (!pressure.isEmpty()) {
-                result.append(String.format("\t<b>%s:</b> %s %s%n",
-                        DataValidation.getStringFromResourceBoundle(rb, "pressure"), pressure,
-                        DataValidation.getStringFromResourceBoundle(rb, "hPa")));
-            }
-            if (!humidity.isEmpty()) {
-                result.append(String.format("\t<b>%s:</b> %s%s%n",
-                        DataValidation.getStringFromResourceBoundle(rb, "humidity"), humidity,
-                        "%"));
-            }
-            if (!visibility.isEmpty()) {
-                result.append(String.format("\t<b>%s:</b> %s%s%n",
-                        DataValidation.getStringFromResourceBoundle(rb, "visibility"),
-                        visibility,
-                        DataValidation.getStringFromResourceBoundle(rb, "m")));
+            if (isForecastTypeFull) {
+                result.append(String.format("\t<b>%s:</b> %s°C%n",
+                        DataValidation.getStringFromResourceBoundle(rb, "feelsLike"), feelsLike));
+
+                if (!pressure.isEmpty()) {
+                    result.append(String.format("\t<b>%s:</b> %s %s%n",
+                            DataValidation.getStringFromResourceBoundle(rb, "pressure"), pressure,
+                            DataValidation.getStringFromResourceBoundle(rb, "hPa")));
+                }
+                if (!humidity.isEmpty()) {
+                    result.append(String.format("\t<b>%s:</b> %s%s%n",
+                            DataValidation.getStringFromResourceBoundle(rb, "humidity"), humidity,
+                            "%"));
+                }
+                if (!visibility.isEmpty()) {
+                    result.append(String.format("\t<b>%s:</b> %s%s%n",
+                            DataValidation.getStringFromResourceBoundle(rb, "visibility"),
+                            visibility,
+                            DataValidation.getStringFromResourceBoundle(rb, "m")));
+                }
             }
             if (!windSpeed.isEmpty()) {
                 result.append(String.format("\t<b>%s:</b> %s %s%n",
                         DataValidation.getStringFromResourceBoundle(rb, "windSpeed"), windSpeed,
                         DataValidation.getStringFromResourceBoundle(rb, "ms")));
             }
-            if (!windDeg.isEmpty()) {
+            if (!windDeg.isEmpty() && isForecastTypeFull) {
                 result.append(String.format("\t<b>%s:</b> %s°%n",
                         DataValidation.getStringFromResourceBoundle(rb, "windDirection"),
                         windDeg));
             }
-            if (!gust.isEmpty()) {
+            if (!gust.isEmpty() && isForecastTypeFull) {
                 result.append(String.format("\t<b>%s:</b> %s %s%n",
                         DataValidation.getStringFromResourceBoundle(rb, "windGust"), gust,
                         DataValidation.getStringFromResourceBoundle(rb, "ms")));
             }
-            if (!clouds.isEmpty()) {
+            if (!clouds.isEmpty() && isForecastTypeFull) {
                 result.append(String.format("\t<b>%s:</b> %s%s%n",
                         DataValidation.getStringFromResourceBoundle(rb, "cloudiness"), clouds,
                         "%"));
@@ -509,7 +513,7 @@ public class OpenWeatherApi {
      *                                  data.
      */
     public static JSONArray getArrayStringFromJsonWeatherForecast(JSONObject weatherForecast,
-            String language) throws AppErrorCheckedException {
+            boolean isForecastTypeFull, String language) throws AppErrorCheckedException {
         JSONArray finalResult = new JSONArray();
         StringBuilder result = new StringBuilder();
         try {
@@ -521,21 +525,22 @@ public class OpenWeatherApi {
             result.append(String.format("<b>%s %s:</b>%n", cityName,
                     DataValidation.utcDateFormatter(currentDateTimeFromList)));
 
-            for (int i = 0; i < list.length(); i++) {
+            int index = isForecastTypeFull ? 1 : 2;
+            for (int i = 0; i < list.length(); i = i + index) {
 
                 JSONObject forecast = list.getJSONObject(i);
                 long timestamp = forecast.getLong("dt");
                 LocalDateTime dateTime = DataValidation
                         .getDateTimeObjectFromUnixTimestamp(timestamp + timezone);
                 if (dateTime.getDayOfMonth() == currentDateTimeFromList.getDayOfMonth()) {
-                    result.append(parseForcastListItem(forecast, timezone, language));
+                    result.append(parseForcastListItem(forecast, timezone, isForecastTypeFull, language));
                 } else {
                     finalResult.put(new JSONObject(
                             Map.of(currentDateTimeFromList.toString(), result.toString())));
                     result = new StringBuilder();
                     result.append(String.format("<b>%s %s:</b>%n", cityName,
                             DataValidation.utcDateFormatter(dateTime)));
-                    result.append(parseForcastListItem(forecast, timezone, language));
+                    result.append(parseForcastListItem(forecast, timezone, isForecastTypeFull, language));
                     currentDateTimeFromList = dateTime;
                 }
             }

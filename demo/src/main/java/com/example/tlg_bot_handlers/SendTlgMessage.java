@@ -18,11 +18,12 @@ public class SendTlgMessage {
     private static final Logger logger = Logger.getLogger(SendTlgMessage.class.getName());
 
     /**
-     * Sends a default error message to the specified chat using the provided Telegram client.
+     * Sends a default error message to the specified chat using the provided
+     * Telegram client.
      *
      * @param telegramClient The Telegram client used to send the message.
-     * @param language The language of the error message.
-     * @param chatId The chat ID to send the error message to.
+     * @param language       The language of the error message.
+     * @param chatId         The chat ID to send the error message to.
      *
      */
     public static void sendDefaultError(TelegramClient telegramClient, String language,
@@ -37,9 +38,24 @@ public class SendTlgMessage {
         }
     }
 
+    /**
+     * Sends a text message to the specified chat using the provided Telegram
+     * client.
+     *
+     * @param telegramClient The Telegram client used to send the message.
+     * @param chatId         The chat ID to send the message to.
+     * @param messageText    The text content of the message to be sent.
+     *
+     * @throws AppErrorCheckedException If an error occurs during the execution of
+     *                                  the Telegram API call.
+     */
     public static void send(TelegramClient telegramClient, long chatId, String messageText)
             throws AppErrorCheckedException {
-        SendMessage msg = SendMessage.builder().chatId(chatId).parseMode("HTML").text(messageText).build();
+        SendMessage msg = SendMessage.builder()
+                .chatId(chatId)
+                .parseMode("HTML")
+                .text(messageText)
+                .build();
         try {
             telegramClient.execute(msg);
         } catch (TelegramApiException e) {
@@ -48,9 +64,21 @@ public class SendTlgMessage {
         }
     }
 
+    /**
+     * Sends a text message to the specified chat using the provided Telegram
+     * client, along with an inline keyboard.
+     *
+     * @param telegramClient The Telegram client used to send the message.
+     * @param chatId         The chat ID to send the message to.
+     * @param messageText    The text content of the message to be sent.
+     * @param keyboard       A list of lists representing the inline keyboard
+     *                       buttons. Each inner list represents a row of buttons.
+     *
+     * @throws AppErrorCheckedException If an error occurs during the execution of
+     *                                  the Telegram API call.
+     */
     public static void send(TelegramClient telegramClient, long chatId, String messageText,
             List<List<InlineKeyboardButton>> keyboard) throws AppErrorCheckedException {
-        final String FUN_NAME = "send with keyboard";
         List<InlineKeyboardRow> keyboardMarkup = new ArrayList<>();
         for (List<InlineKeyboardButton> row : keyboard) {
             InlineKeyboardRow keyboardRow = new InlineKeyboardRow();
@@ -88,9 +116,9 @@ public class SendTlgMessage {
         }
     }
 
-    public static void sendReplyWithKeyboard(TelegramClient telegramClient, long chatId, String messageText, int replyMsgId,
+    public static void sendReplyWithKeyboard(TelegramClient telegramClient, long chatId, String messageText,
+            int replyMsgId,
             List<List<InlineKeyboardButton>> keyboard) throws AppErrorCheckedException {
-        final String FUN_NAME = "send with keyboard";
         List<InlineKeyboardRow> keyboardMarkup = new ArrayList<>();
         for (List<InlineKeyboardButton> row : keyboard) {
             InlineKeyboardRow keyboardRow = new InlineKeyboardRow();
@@ -117,7 +145,6 @@ public class SendTlgMessage {
 
     public static void editMessagText(TelegramClient telegramClient, int messageId, long chatId,
             String messageText, List<List<InlineKeyboardButton>> keyboard) throws AppErrorCheckedException {
-        final String FUN_NAME = "edit";
         List<InlineKeyboardRow> keyboardMarkup = new ArrayList<>();
         for (List<InlineKeyboardButton> row : keyboard) {
             InlineKeyboardRow keyboardRow = new InlineKeyboardRow();

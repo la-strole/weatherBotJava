@@ -95,8 +95,9 @@ public class CallbackHandler {
         }
         try {
             // Get forecast JSON object for coordinates from API.
+            boolean isForecastTypeFull = Database.getisFullForecast(chatId);
             resultForecastStringArray = OpenWeatherApi.getArrayStringFromJsonWeatherForecast(
-                    OpenWeatherApi.getWeatherForecast(lon, lat, language), language);
+                    OpenWeatherApi.getWeatherForecast(lon, lat, language), isForecastTypeFull, language);
             // Add forcecast to the database.
             Database.insertForecast(chatId, originalMessage.getMessageId(),
                     resultForecastStringArray);
@@ -129,7 +130,8 @@ public class CallbackHandler {
         try {
             JSONArray forecastArray = Database.getForecast(chatId, msgId);
             if (forecastArray.isEmpty()) {
-                logger.severe("Failed to get forecast from the database.");
+                logger.info(String.format("Failed to get forecast from the database. Chatid=%d", chatId));
+                SendTlgMessage.sendDefaultError(telegramClient, language, chatId);
                 return;
             }
             // Get the forecast text from the forecast array.
@@ -137,13 +139,13 @@ public class CallbackHandler {
             String forecastText = forecastSpecificDay.getString(forecastSpecificDay.keys().next());
             // Get the date forward from the forecast array.
             String dateForward = "";
-            if (index + 1 < forecastArray.length()){ 
+            if (index + 1 < forecastArray.length()) {
                 dateForward = OpenWeatherApi.getDayOfMonthFromForecastArray(forecastArray,
                         index + 1, language);
             }
             // Get the date backward from the forecast array.
             String dateBackward = "";
-            if (index - 1 >= 0 ){
+            if (index - 1 >= 0) {
                 dateBackward = OpenWeatherApi.getDayOfMonthFromForecastArray(forecastArray,
                         index - 1, language);
             }

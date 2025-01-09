@@ -4,6 +4,7 @@ import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
+import java.util.Set;
 import com.example.exceptions.AppErrorCheckedException;
 import java.time.DateTimeException;
 import java.time.Instant;
@@ -142,6 +143,7 @@ public class DataValidation {
     }
 
     public static boolean isTableNameValid(String tableName) {
-        return (tableName.equals("multipleCities") || tableName.equals("forecasts"));
+        Set<String> tableNames = Set.of("multipleCities", "forecasts", "subscribes", "fullForecast");
+        return (tableNames.contains(tableName));
     }
 }

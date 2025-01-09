@@ -43,9 +43,10 @@ public class CommandHandler {
                     DataValidation.getStringFromResourceBoundle(rb, "helpCommandDescription")));
             commandsList.add(new BotCommand("settings",
                     DataValidation.getStringFromResourceBoundle(rb, "settingsCommandDescription")));
-            commandsList.add(new BotCommand("settings_add_city", DataValidation
-                    .getStringFromResourceBoundle(rb, "settingsCommandAddCityDescription")));
-
+            commandsList.add(new BotCommand("settings_add_city",
+                    DataValidation.getStringFromResourceBoundle(rb, "settingsCommandAddCityDescription")));
+            commandsList.add(new BotCommand("change_forecast_type",
+                    DataValidation.getStringFromResourceBoundle(rb, "settingsCommandChangeForecastTypeDescription")));
             final SendMessage msg = SendMessage.builder().chatId(chatId)
                     .text(DataValidation.getStringFromResourceBoundle(rb, "startCommandAnswer"))
                     .build();
@@ -115,6 +116,25 @@ public class CommandHandler {
         }
     }
 
+    private void handleCommandChangeForecastType() {
+        // Get current forecast type from the database
+        final long chatID = update.getMessage().getChatId();
+        final ResourceBundle rb = DataValidation.getMessages(language);
+        try{
+            Database.deleteForecast(chatID);
+            boolean currentForecastType = Database.getisFullForecast(chatID);
+            Database.insertIsFullForecast(chatID, !currentForecastType);
+            String forecastType = currentForecastType
+                    ? DataValidation.getStringFromResourceBoundle(rb, "ForecastTypeShort")
+                    : DataValidation.getStringFromResourceBoundle(rb, "ForecastTypeFull");
+            String msgText = DataValidation.getStringFromResourceBoundle(rb, "settingsCommandChangeForecastTypeAnswer")
+                    + " " + forecastType;
+            SendTlgMessage.send(telegramClient, chatID, msgText);
+        } catch (AppErrorCheckedException e){
+            SendTlgMessage.sendDefaultError(telegramClient, language, chatID);
+        }
+    }
+
     private void handleCommandDefault() {
         final long chatId = update.getMessage().getChatId();
         final ResourceBundle rb = DataValidation.getMessages(language);
@@ -149,6 +169,10 @@ public class CommandHandler {
             }
             case "/settings_add_city": {
                 handleCommandSettingsAddCity();
+                break;
+            }
+            case "/change_forecast_type": {
+                handleCommandChangeForecastType();
                 break;
             }
             default:
