@@ -75,8 +75,8 @@ public class GeocodingApiOpenWeather extends GeocodingApi {
                     cityJsonObject.put(fields.CITY_NAME.toString(), responseJsonObject.getString("name"));
                 }
                 cityJsonObject.put(fields.COUNTRY.toString(), responseJsonObject.getString("country"));
-                cityJsonObject.put(fields.LON.toString(), responseJsonObject.getString("lon"));
-                cityJsonObject.put(fields.LAT.toString(), responseJsonObject.getString("lat"));
+                cityJsonObject.put(fields.LON.toString(), String.format("%f", responseJsonObject.getDouble("lon")));
+                cityJsonObject.put(fields.LAT.toString(), String.format("%f", responseJsonObject.getDouble("lat")));
                 cityJsonObject.put(fields.STATE.toString(), responseJsonObject.optString("state", null));
                 coordinates.put(cityJsonObject);
             }
