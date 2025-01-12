@@ -141,7 +141,7 @@ public class CallbackHandler {
             keyboard.add(row);
             SendTlgMessage.editMessagText(telegramClient, originalMessage.getMessageId(), chatId,
                     text, keyboard);
-        } catch (final AppErrorCheckedException e) {
+        } catch (final AppErrorCheckedException | JSONException e) {
             logger.severe("Can not complete collback Forecast.");
         }
     }
