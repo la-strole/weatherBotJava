@@ -38,10 +38,10 @@ public class ForecastItem {
         final JSONObject result = new JSONObject();
 
         try {
-            result.put("dt", forecastItem.getDt()); // convert
+            result.put("dt", forecastItem.getDt().toString()); // convert
             result.put("cityTimezone", forecastItem.getCityTimezone());
-            result.put("sunrise", forecastItem.getSunrise());
-            result.put("sunset", forecastItem.getSunset());
+            result.put("sunrise", forecastItem.getSunrise().toString());
+            result.put("sunset", forecastItem.getSunset().toString());
             result.put("temp", forecastItem.getTemp());
             result.put("feelsLike", forecastItem.getFeelsLike());
             result.put("pressure", forecastItem.getPressure());
