@@ -47,8 +47,8 @@ public class ForecastFull {
             optionalAppend(result, forecastItem.getWindDeg(), "windDirection", "°", false, rb);
             optionalAppend(result, forecastItem.getWindGust(), "windGust", "ms", true, rb);
             optionalAppend(result, forecastItem.getProbabilityOfPrecipitation(), "pop", "", false, rb);
-            optionalAppend(result, forecastItem.getRainh(), "rain", "mmH", true, rb);
-            optionalAppend(result, forecastItem.getSnowh(), "snow", "mmH", true, rb);
+            optionalAppend(result, forecastItem.getRainh(), "rain", "mm3H", true, rb);
+            optionalAppend(result, forecastItem.getSnowh(), "snow", "mm3H", true, rb);
 
             return result.toString();
         } catch (final JSONException e) {

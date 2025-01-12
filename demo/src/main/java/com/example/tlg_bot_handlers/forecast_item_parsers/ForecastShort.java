@@ -41,8 +41,8 @@ public class ForecastShort {
             result.append(String.format("\t<b>%s:</b> %s°C%n",
                     DataValidation.getStringFromResourceBoundle(rb, "temperature"), forecastItem.getTemp()));
             optionalAppend(result, forecastItem.getWindSpeed(), "windSpeed", "ms", true, rb);
-            optionalAppend(result, forecastItem.getRainh(), "rain", "mmH", true, rb);
-            optionalAppend(result, forecastItem.getSnowh(), "snow", "mmH", true, rb);
+            optionalAppend(result, forecastItem.getRainh(), "rain", "mm3H", true, rb);
+            optionalAppend(result, forecastItem.getSnowh(), "snow", "mm3H", true, rb);
 
             return result.toString();
         } catch (final JSONException e) {
