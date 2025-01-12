@@ -83,11 +83,11 @@ public class CurrentWeather {
             boolean translate, ResourceBundle rb) throws AppErrorCheckedException {
 
         String unitString = translate ? DataValidation.getStringFromResourceBoundle(rb, unit) : unit;
-        if (!forecastItemString.isEmpty() && forecastItemString != null) {
+        if (forecastItemString != null && !forecastItemString.isEmpty()){
             result.append(String.format("<b>%s:</b> %s%s%n",
                     DataValidation.getStringFromResourceBoundle(rb, name),
                     forecastItemString,
-                    unitString));
+                    unitString)); 
         }
     }
 

@@ -64,7 +64,7 @@ public class ForecastShort {
             final boolean translate, final ResourceBundle rb) throws AppErrorCheckedException {
 
         final String unitString = translate ? DataValidation.getStringFromResourceBoundle(rb, unit) : unit;
-        if (!forecastItemString.isEmpty() && forecastItemString != null) {
+        if (forecastItemString != null && !forecastItemString.isEmpty()) {
             result.append(String.format("\t<b>%s:</b> %s%s%n",
                     DataValidation.getStringFromResourceBoundle(rb, name),
                     forecastItemString,
