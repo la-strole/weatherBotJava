@@ -20,12 +20,15 @@ public class GetCurrentWeatherOpenWeather extends GetCurrentWeather {
     private static final Logger logger = Logger.getLogger(GetCurrentWeatherOpenWeather.class.getName());
     private static final String RUNTIME_ERROR = "Runtime error.";
     private static final String CURRENT_WEATHER_API_URL = "https://api.openweathermap.org/data/2.5/weather";
+
     /**
-     * Parses the JSON object representing the current weather and populates a ForecastItem object with the parsed data.
+     * Parses the JSON object representing the current weather and populates a
+     * ForecastItem object with the parsed data.
      *
      * @param currentWeather The JSON object containing the current weather data.
      * @return A ForecastItem object populated with the parsed data.
-     * @throws AppErrorCheckedException If an error occurs during the parsing process.
+     * @throws AppErrorCheckedException If an error occurs during the parsing
+     *                                  process.
      */
     private static ForecastItem currentWeatherParser(JSONObject currentWeather) throws AppErrorCheckedException {
         try {
@@ -44,7 +47,8 @@ public class GetCurrentWeatherOpenWeather extends GetCurrentWeather {
             item.setFeelsLike(Math.round(main.getFloat("feels_like")));
             item.setPressure(main.optString("grnd_level", ""));
             item.setHumidity(main.optString("humidity", ""));
-            item.setDescription(currentWeather.getJSONObject("weather").getString("description"));
+            item.setDescription(currentWeather.getJSONArray("weather")
+                .getJSONObject(0).getString("description"));
             JSONObject cloudsObj = currentWeather.optJSONObject("clouds");
             if (cloudsObj != null) {
                 item.setClouds(cloudsObj.optString("all", ""));
@@ -75,10 +79,12 @@ public class GetCurrentWeatherOpenWeather extends GetCurrentWeather {
             throw new AppErrorCheckedException(RUNTIME_ERROR);
         }
     }
+
     static final Dotenv dotenv = Dotenv.load();
     static final String API_KEY = dotenv.get("OpenWeatherToken");
 
     String language;
+
     public GetCurrentWeatherOpenWeather(String language) {
         this.language = language;
     }

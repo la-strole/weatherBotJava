@@ -65,7 +65,8 @@ public class GetForecastWeatherOpenWeather extends GetForecastWeather {
             item.setFeelsLike(Math.round(main.getFloat("feels_like")));
             item.setPressure(main.optString("grnd_level", ""));
             item.setHumidity(main.optString("humidity", ""));
-            item.setDescription(listItem.getJSONObject("weather").getString("description"));
+            item.setDescription(listItem.getJSONArray("weather")
+                .getJSONObject(0).getString("description"));
             JSONObject cloudsObj = listItem.optJSONObject("clouds");
             if (cloudsObj != null) {
                 item.setClouds(cloudsObj.optString("all", ""));
@@ -121,7 +122,10 @@ public class GetForecastWeatherOpenWeather extends GetForecastWeather {
             int count = apiResponseForecastWeather.getJSONObject(0).getInt("cnt");
             for (int i = 0; i < count; i++) {
                 ForecastItem forecastItem = forecastWeatherParser(apiResponseForecastWeather.getJSONObject(0), i);
-                if (date == null || date == forecastItem.getDt().getDayOfMonth()){
+                if (date == null) {
+                    date = forecastItem.getDt().getDayOfMonth();
+                } 
+                if (date == forecastItem.getDt().getDayOfMonth()){
                     forecasts.put(ForecastItem.serializeToJsonObject(forecastItem));
                 } else if (i == count - 1){
                     item = new JSONObject();
