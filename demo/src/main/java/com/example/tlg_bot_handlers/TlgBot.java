@@ -1,14 +1,15 @@
-package com.example;
+package com.example.tlg_bot_handlers;
 
 import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
 import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
-import com.example.tlg_bot_handlers.CommandHandler;
-import com.example.tlg_bot_handlers.MessageHandler;
+
+import com.example.DataValidation;
 import com.example.exceptions.AppErrorCheckedException;
-import com.example.tlg_bot_handlers.CallbackHandler;
+
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class TlgBot implements LongPollingSingleThreadUpdateConsumer {
@@ -28,10 +29,9 @@ public class TlgBot implements LongPollingSingleThreadUpdateConsumer {
                 : update.getCallbackQuery().getFrom().getLanguageCode();
 
         if (language == null) {
-            logger.info("Language is not available for user ");
+            logger.log(Level.INFO, "Language is not available for user ");
             language = "en";
         }
-
         // If the update is a command.
         if (update.hasMessage() && update.getMessage().isCommand()) {
             CommandHandler ch = new CommandHandler(telegramClient, update, language);

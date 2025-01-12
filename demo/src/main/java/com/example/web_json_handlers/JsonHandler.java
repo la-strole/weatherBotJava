@@ -1,4 +1,4 @@
-package com.example;
+package com.example.web_json_handlers;
 
 import java.io.IOException;
 import java.net.URI;
@@ -11,10 +11,13 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import com.example.exceptions.AppErrorCheckedException;
 
 
@@ -34,9 +37,40 @@ import com.example.exceptions.AppErrorCheckedException;
  * </ul>
  * </p>
  */
-class JsonHandler {
+public class JsonHandler {
 
     private static final Logger logger = Logger.getLogger(JsonHandler.class.getName());
+    private static final String RUNTIME_ERROR = "Runtime Error.";
+
+    /**
+     * Fetches JSON data from a given URL and returns it as a JSONArray.
+     * If the fetched JSON data is a JSONObject, it will be wrapped in a JSONArray.
+     *
+     * @param url The URL to fetch the JSON data from.
+     * @param params Optional URL parameters to include in the request.
+     * @return A JSONArray containing the fetched JSON data.
+     * @throws AppErrorCheckedException If there is an error during the JSON fetching or parsing process.
+     */
+    public static JSONArray getJsonFromWeb(final String url, final Optional<Map<String, String>> params)
+            throws AppErrorCheckedException {
+        JSONArray result = new JSONArray();
+        final Map<String, String> urlParams = params.orElseGet(HashMap::new);
+        final String jsonString = getJsonStringFromWeb(url, urlParams);
+        // Check if jsonString is JSONArray.
+        try {
+            result = new JSONArray(jsonString);
+        } catch (final JSONException e) {
+            // Check if jsonString is JSONObject and packing it to JSONArray.
+            try {
+                final JSONObject object = new JSONObject(jsonString);
+                result.put(object);
+            } catch (final JSONException e2) {
+                logger.log(Level.SEVERE,  e::toString);
+                throw new AppErrorCheckedException(RUNTIME_ERROR);
+            }
+        }
+        return result;
+    }
 
     /**
      * Builds a URI from the given base URL and parameters.
@@ -46,15 +80,15 @@ class JsonHandler {
      * @return a URI constructed from the base URL and the provided parameters
      * @throws AppErrorCheckedException if the given base URL is invalid
      */
-    private static URI buildURI(String baseUrl, Map<String, String> params)
+    private static URI buildURI(final String baseUrl, final Map<String, String> params)
             throws AppErrorCheckedException {
         try {
-            StringBuilder uriBuilder = new StringBuilder(baseUrl);
+            final StringBuilder uriBuilder = new StringBuilder(baseUrl);
             if (!params.isEmpty()) {
                 uriBuilder.append("?");
-                for (Map.Entry<String, String> entry : params.entrySet()) {
-                    String encodedKey = URLEncoder.encode(entry.getKey(), StandardCharsets.UTF_8);
-                    String encodedValue =
+                for (final Map.Entry<String, String> entry : params.entrySet()) {
+                    final String encodedKey = URLEncoder.encode(entry.getKey(), StandardCharsets.UTF_8);
+                    final String encodedValue =
                             URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8);
                     uriBuilder.append(encodedKey).append("=").append(encodedValue).append("&");
                 }
@@ -64,8 +98,8 @@ class JsonHandler {
             return URI.create(uriBuilder.toString());
         } catch (NullPointerException | IllegalStateException | IndexOutOfBoundsException
                 | IllegalArgumentException e) {
-            logger.severe("buildURI:" + e);
-            throw new AppErrorCheckedException("JsonHandler:buidURI: Runtime Error");
+            logger.log(Level.SEVERE,  e::toString);
+            throw new AppErrorCheckedException(RUNTIME_ERROR);
         }
     }
 
@@ -78,62 +112,36 @@ class JsonHandler {
      * @throws AppErrorCheckedException If there is an error during the request or the response
      *         status is not 200 or if request interrupted.
      */
-    private static String getJsonStringFromWeb(String url, Map<String, String> urlParams)
+    private static String getJsonStringFromWeb(final String url, final Map<String, String> urlParams)
             throws AppErrorCheckedException {
         try (HttpClient client =
                 HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();) {
-            HttpRequest request = HttpRequest.newBuilder().uri(buildURI(url, urlParams))
+            final HttpRequest request = HttpRequest.newBuilder().uri(buildURI(url, urlParams))
                     .header("Accept", "application/json").build();
-            HttpResponse<String> response =
+            final HttpResponse<String> response =
                     client.send(request, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() != 200) {
-                logger.severe(String.format(
-                        "getJsonStringFromWeb: Failed to get response from the API. Status code: %d Request: %s",
+                logger.log(Level.SEVERE, () -> String.format(
+                        "Failed to get response from the API. Status code: %d Request: %s",
                         response.statusCode(), request.uri().toString()));
                 throw new AppErrorCheckedException(
-                        "JsonHandler:getJsnStringFromWeb: Runtime Error");
+                        RUNTIME_ERROR);
             } else {
                 return response.body();
             }
         } catch (IllegalArgumentException | IOException | SecurityException e) {
-            logger.severe("getJsnStringFromWeb:" + e);
-            throw new AppErrorCheckedException("JsonHandler:getJsnStringFromWeb: Runtime Error");
-        } catch (InterruptedException e2) {
+            logger.log(Level.SEVERE, e::toString);
+            throw new AppErrorCheckedException(RUNTIME_ERROR);
+        } catch (final InterruptedException e2) {
             Thread.currentThread().interrupt();
-            logger.severe("getJsonStringFromWeb: Request interrupted: " + e2);
+            logger.log(Level.SEVERE, e2::toString);
             throw new AppErrorCheckedException(
                     "JsonHandler:getJsnStringFromWeb: Request interrupted");
         }
     }
 
-    /**
-     * Fetches JSON data from a given URL and returns it as a JSONArray.
-     * If the fetched JSON data is a JSONObject, it will be wrapped in a JSONArray.
-     *
-     * @param url The URL to fetch the JSON data from.
-     * @param params Optional URL parameters to include in the request.
-     * @return A JSONArray containing the fetched JSON data.
-     * @throws AppErrorCheckedException If there is an error during the JSON fetching or parsing process.
-     */
-    public static JSONArray getJsonFromWeb(String url, Optional<Map<String, String>> params)
-            throws AppErrorCheckedException {
-        JSONArray result = new JSONArray();
-        Map<String, String> urlParams = params.orElseGet(HashMap::new);
-        String jsonString = getJsonStringFromWeb(url, urlParams);
-        // Check if jsonString is JSONArray.
-        try {
-            result = new JSONArray(jsonString);
-        } catch (JSONException e) {
-            // Check if jsonString is JSONObject and packing it to JSONArray.
-            try {
-                JSONObject object = new JSONObject(jsonString);
-                result.put(object);
-            } catch (JSONException e2) {
-                logger.severe("getJsonFromWeb:" + e);
-                throw new AppErrorCheckedException("JsonHandler:getJsonFromWeb: Rntime Error");
-            }
-        }
-        return result;
+    private JsonHandler(){
+        throw new IllegalStateException("Utility class");
     }
 }
 

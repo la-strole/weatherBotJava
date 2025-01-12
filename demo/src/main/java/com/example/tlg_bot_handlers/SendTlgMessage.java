@@ -174,6 +174,16 @@ public class SendTlgMessage {
         }
     }
 
+    /**
+     * Edits a message text in a Telegram chat.
+     *
+     * @param telegramClient The Telegram client to use for sending the message.
+     * @param messageId The ID of the message to edit.
+     * @param chatId The ID of the chat where the message is located.
+     * @param messageText The new text for the message.
+     * @param keyboard The inline keyboard to attach to the message.
+     * @throws AppErrorCheckedException If an error occurs while editing the message.
+     */
     public static void editMessagText(final TelegramClient telegramClient, final int messageId, final long chatId,
             final String messageText, final List<List<InlineKeyboardButton>> keyboard) throws AppErrorCheckedException {
         final List<InlineKeyboardRow> keyboardMarkup = new ArrayList<>();

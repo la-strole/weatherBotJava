@@ -3,147 +3,112 @@ package com.example;
 import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
-import java.util.logging.Logger;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import com.example.exceptions.AppErrorCheckedException;
-import java.time.DateTimeException;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 
 /**
- * The DataValidation class provides methods to validate various data inputs
- * such as language codes,
- * city names, longitude, and latitude.
+ * The DataValidation class provides utility methods for validating various types of data,
+ * such as city names, geographic coordinates, and table names. It also includes methods
+ * for retrieving localized messages from resource bundles.
  * 
- * <p>
- * This class contains a static map of supported languages and provides methods
- * to check if a
- * language is supported, if a city name is valid, and if longitude and latitude
- * values are within
- * valid ranges.
- * </p>
+ * <p>This class is designed to be used as a utility class and should not be instantiated.
+ * The constructor is private to prevent instantiation.
  * 
- * <p>
- * Supported languages are stored in a static map with language codes as keys
- * and language names as
- * values.
- * </p>
- * 
- * <p>
- * Methods:
- * </p>
+ * <p>Methods included:
  * <ul>
- * <li>{@link #isCityNameValid(String)} - Validates a city name based on allowed
- * characters and
- * length.</li>
- * <li>{@link #isLongitudeValid(Double)} - Validates if a longitude value is
- * within the range of
- * -180 to 180.</li>
- * <li>{@link #isLatitudeValid(Double)} - Validates if a latitude value is
- * within the range of -90
- * to 90.</li>
+ *   <li>{@link #getMessages(String)} - Retrieves a ResourceBundle containing localized messages based on the specified language.</li>
+ *   <li>{@link #getStringFromResourceBoundle(ResourceBundle, String)} - Retrieves a string from the provided ResourceBundle.</li>
+ *   <li>{@link #isCityNameValid(String)} - Validates a city name based on specific criteria.</li>
+ *   <li>{@link #isLongitudeValid(Double)} - Validates a longitude value.</li>
+ *   <li>{@link #isLatitudeValid(Double)} - Validates a latitude value.</li>
+ *   <li>{@link #isTableNameValid(String)} - Validates a table name against a predefined set of valid table names.</li>
  * </ul>
+ * 
+ * <p>Example usage:
+ * <pre>
+ * {@code
+ * boolean isValidCity = DataValidation.isCityNameValid("New York");
+ * boolean isValidLongitude = DataValidation.isLongitudeValid(-74.0060);
+ * boolean isValidLatitude = DataValidation.isLatitudeValid(40.7128);
+ * boolean isValidTable = DataValidation.isTableNameValid("forecasts");
+ * ResourceBundle messages = DataValidation.getMessages("en");
+ * String welcomeMessage = DataValidation.getStringFromResourceBoundle(messages, "welcome");
+ * }
+ * </pre>
+ * 
+ * <p>Note: This class uses a logger to log severe errors and throws a custom checked exception
+ * {@link AppErrorCheckedException} for error handling.
+ * 
+ * @see java.util.ResourceBundle
+ * @see java.util.Locale
+ * @see java.util.logging.Logger
+ * @see AppErrorCheckedException
  */
 public class DataValidation {
     private static final Logger logger = Logger.getLogger(DataValidation.class.getName());
+    private static final String RUNTIME_ERROR = "Runtime Error.";
 
-    public static ResourceBundle getMessages(String language) {
-        Locale locale = Locale.forLanguageTag(language);
+    /**
+     * Retrieves a ResourceBundle containing localized messages based on the
+     * specified language.
+     * If the specified language is not available, it falls back to English.
+     *
+     * @param language the language tag (e.g., "en", "fr", "es") to determine the
+     *                 locale for the messages.
+     * @return a ResourceBundle containing the localized messages for the specified
+     *         language, or English if the language is not available.
+     */
+    public static ResourceBundle getMessages(final String language) {
+        final Locale locale = Locale.forLanguageTag(language);
         ResourceBundle messages;
         try {
             messages = ResourceBundle.getBundle("messages", locale);
-        } catch (MissingResourceException e) {
+        } catch (final MissingResourceException e) {
             messages = ResourceBundle.getBundle("messages", Locale.ENGLISH); // Fallback to English
         }
         return messages;
     }
 
-    public static String getStringFromResourceBoundle(ResourceBundle messages, String string)
+    /**
+     * Retrieves a string from the provided ResourceBundle.
+     *
+     * @param messages the ResourceBundle containing the desired string
+     * @param string   the key for the desired string in the ResourceBundle
+     * @return the string associated with the specified key in the ResourceBundle
+     * @throws AppErrorCheckedException if the key is not found, the value is not a
+     *                                  string, or any other error occurs
+     */
+    public static String getStringFromResourceBoundle(final ResourceBundle messages, final String string)
             throws AppErrorCheckedException {
         try {
             return messages.getString(string);
         } catch (NullPointerException | MissingResourceException | ClassCastException e) {
-            logger.severe("getString\t" + e);
-            throw new AppErrorCheckedException("Runtime Error.");
+            logger.log(Level.SEVERE, e::toString);
+            throw new AppErrorCheckedException(RUNTIME_ERROR);
         }
     }
 
-    /**
-     * Formats a given LocalDateTime object to a string in UTC time format (HH:mm).
-     *
-     * @param dateTimeObject the LocalDateTime object to be formatted
-     * @return a string representing the formatted time in HH:mm format
-     * @throws AppErrorCheckedException if there is an error during formatting
-     */
-    public static String utcTimeFormatter(LocalDateTime dateTimeObject)
-            throws AppErrorCheckedException {
-        try {
-
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
-            return dateTimeObject.format(formatter);
-        } catch (DateTimeException | IllegalArgumentException e) {
-            logger.severe(String.format("dateTime = %s, Error:%s",
-                    dateTimeObject.toString(), e));
-            throw new AppErrorCheckedException("Runtime Error.");
-        }
-    }
-
-    /**
-     * Formats a given LocalDateTime object to a string in the format "dd.MM.yyyy".
-     *
-     * @param dateTimeObject the LocalDateTime object to be formatted
-     * @return a string representation of the date in the format "dd.MM.yyyy"
-     * @throws AppErrorCheckedException if there is an error during formatting
-     */
-    public static String utcDateFormatter(LocalDateTime dateTimeObject)
-            throws AppErrorCheckedException {
-        try {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
-            return dateTimeObject.format(formatter);
-        } catch (DateTimeException | IllegalArgumentException e) {
-            logger.severe(String.format("dateTime = %s, Error:%s",
-                    dateTimeObject.toString(), e));
-            throw new AppErrorCheckedException(
-                    "Runtime Error.");
-        }
-    }
-
-    /**
-     * Converts a Unix timestamp to a LocalDateTime object in UTC.
-     *
-     * @param unixTimestamp the Unix timestamp to convert
-     * @return the LocalDateTime object representing the given Unix timestamp in UTC
-     * @throws AppErrorCheckedException if there is an error during the conversion
-     */
-    public static LocalDateTime getDateTimeObjectFromUnixTimestamp(long unixTimestamp)
-            throws AppErrorCheckedException {
-
-        try {
-            Instant instant = Instant.ofEpochSecond(unixTimestamp);
-            return LocalDateTime.ofInstant(instant, ZoneId.of("UTC"));
-        } catch (DateTimeException e) {
-            logger.severe(String.format("unixTimestamp = %d, Error:%s",
-                    unixTimestamp, e));
-            throw new AppErrorCheckedException("Runtime Error.");
-        }
-    }
-
-    public static boolean isCityNameValid(String cityName) {
+    public static boolean isCityNameValid(final String cityName) {
         return (cityName.matches("^[\\p{L}[\\s'-]]+$") && cityName.length() <= 25);
     }
 
-    public static boolean isLongitudeValid(Double lon) {
+    public static boolean isLongitudeValid(final Double lon) {
         return (lon >= -180 && lon <= 180);
     }
 
-    public static boolean isLatitudeValid(Double lat) {
+    public static boolean isLatitudeValid(final Double lat) {
         return (lat >= -90 && lat <= 90);
     }
 
-    public static boolean isTableNameValid(String tableName) {
-        Set<String> tableNames = Set.of("multipleCities", "forecasts", "subscribes", "fullForecast");
+    public static boolean isTableNameValid(final String tableName) {
+        final Set<String> tableNames = Set.of("multipleCities", "forecasts", "subscribes", "fullForecast");
         return (tableNames.contains(tableName));
+    }
+
+    private DataValidation() {
+        throw new IllegalStateException("Utility class");
     }
 }

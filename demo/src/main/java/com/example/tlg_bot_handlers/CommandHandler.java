@@ -14,7 +14,7 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import com.example.DataValidation;
-import com.example.Database;
+import com.example.database.Database;
 import com.example.exceptions.AppErrorCheckedException;
 
 public class CommandHandler {
@@ -42,6 +42,7 @@ public class CommandHandler {
                 handleCommandHelp();
                 break;
             }
+            /*
             case "/settings": {
                 // Get chatId from message.
                 handleCommandSettings();
@@ -51,6 +52,7 @@ public class CommandHandler {
                 handleCommandSettingsAddCity();
                 break;
             }
+            */
             case "/change_forecast_type": {
                 handleCommandChangeForecastType();
                 break;
@@ -104,6 +106,9 @@ public class CommandHandler {
 
     }
 
+    // TODO add support for subscriptions.
+    /*
+
     private void handleCommandSettings() {
         // Get chat ID from the message.
         final long chatId = update.getMessage().getChatId();
@@ -145,7 +150,7 @@ public class CommandHandler {
             SendTlgMessage.sendDefaultError(telegramClient, language, chatID);
         }
     }
-
+*/
     private void handleCommandChangeForecastType() {
         // Get current forecast type from the database
         final long chatID = update.getMessage().getChatId();

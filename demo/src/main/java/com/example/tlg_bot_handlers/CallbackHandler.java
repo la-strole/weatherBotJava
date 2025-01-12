@@ -1,21 +1,25 @@
 package com.example.tlg_bot_handlers;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
-import com.example.Database;
-import com.example.OpenWeatherApi;
+import com.example.database.Database;
 import com.example.exceptions.AppErrorCheckedException;
+import com.example.tlg_bot_handlers.forecast_item_parsers.ForecastFull;
+import com.example.tlg_bot_handlers.forecast_item_parsers.ForecastShort;
+import com.example.weather_api.GetForecastWeatherOpenWeather;
 
 public class CallbackHandler {
     public enum CallbackValues {
@@ -50,12 +54,12 @@ public class CallbackHandler {
     }
 
     public void callbackHandle() {
-        if (callbackText.startsWith("C")) {
+        if (callbackText.startsWith(CallbackValues.C.name())) {
             callbackMultipleCitiesChoise();
-        } else if (callbackText.equals("F")) {
+        } else if (callbackText.equals(CallbackValues.F.name())) {
             // Handle the forecast request.
             callbackForecast();
-        } else if (callbackText.startsWith("FI")) {
+        } else if (callbackText.startsWith(CallbackValues.FI.name())) {
             // Handle the forecast index.
             callbackForecastNavigation();
         }
@@ -87,8 +91,11 @@ public class CallbackHandler {
             SendTlgMessage.sendDefaultError(telegramClient, language, chatId);
             return;
         }
-        MessageHandler.sendCurrentWeatherForOneCity(citiesCoordinates, index, language,
-                telegramClient, chatId);
+        // Get city coordinates from the cities coordinates.
+        double lon = citiesCoordinates.getJSONObject(index).getDouble("lon");
+        double lat = citiesCoordinates.getJSONObject(index).getDouble("lat");
+        // Send the current weather.
+        MessageHandler.sendCurrentWeatherForSingleCity(lon, lat, telegramClient, language, chatId);
     }
 
     private void callbackForecast() {
@@ -109,30 +116,31 @@ public class CallbackHandler {
             return;
         }
         try {
-            // Get forecast JSON object for coordinates from API.
-            JSONObject weatherForecast = OpenWeatherApi.getWeatherForecast(lon, lat, language);
+            // Get forecast JSON array from GetForecastWeather class.
+            GetForecastWeatherOpenWeather forecastWeatherOpenWeather = new GetForecastWeatherOpenWeather(language);
+            JSONArray weatherForecast = forecastWeatherOpenWeather.getForecastWeather(lon, lat);
             // Add forecast to the database.
             Database.insertForecast(chatId, originalMessage.getMessageId(),
                     weatherForecast);
             // Get forecast type for chat.
             final boolean isForecastTypeFull = Database.getisFullForecast(chatId);
-            // Parse forecast JSON depend on forecast type.
-            JSONArray resultForecastStringArray = OpenWeatherApi.getArrayStringFromJsonWeatherForecast(
-                    weatherForecast, isForecastTypeFull, language);
+            // Get forecast for the first day.
+            JSONArray firstDayForecast = weatherForecast.getJSONObject(0).getJSONArray("forecasts");
+            // Parse forecast JSON for the first day depend on forecast type.
+            String text = isForecastTypeFull ? ForecastFull.getForecastStringToSpecificDay(firstDayForecast, language)
+                    : ForecastShort.getForecastStringToSpecificDay(firstDayForecast, language);
             // Edit the original message with the first day forecast.
-            final JSONObject forecastFirstDayJSONObject = resultForecastStringArray.getJSONObject(0);
-            final String msgText = forecastFirstDayJSONObject.getString(forecastFirstDayJSONObject.keys().next());
-            final String dateForward = OpenWeatherApi
-                    .getDayOfMonthFromForecastArray(resultForecastStringArray, 1, language);
+            final String dateForward = LocalDateTime.parse(weatherForecast.getJSONObject(1).getString("date"))
+                    .format(DateTimeFormatter.ofPattern("dd MMM", Locale.forLanguageTag(language)));
             final InlineKeyboardButton button = InlineKeyboardButton.builder()
                     .text(new String(Character.toChars(0x1f449)) + " " + dateForward)
-                    .callbackData("FI:1").build(); // FI - forecast index 1
+                    .callbackData(String.format("%s:%d", CallbackValues.FI.name(), 1)).build(); // FI - forecast index 1
             final List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
             final List<InlineKeyboardButton> row = new ArrayList<>();
             row.add(button);
             keyboard.add(row);
             SendTlgMessage.editMessagText(telegramClient, originalMessage.getMessageId(), chatId,
-                    msgText, keyboard);
+                    text, keyboard);
         } catch (final AppErrorCheckedException e) {
             logger.severe("Can not complete collback Forecast.");
         }
@@ -146,7 +154,7 @@ public class CallbackHandler {
         final int msgId = originalMessage.getMessageId();
         // Get the forecast from the database.
         try {
-            final JSONObject weatherForecast = Database.getForecast(chatId, msgId);
+            final JSONArray weatherForecast = Database.getForecast(chatId, msgId);
             if (weatherForecast.isEmpty()) {
                 logger.log(Level.INFO,
                         () -> String.format("Failed to get forecast from the database. Chat id = %d", chatId));
@@ -155,22 +163,23 @@ public class CallbackHandler {
             }
             // Get forecast type for chat.
             final boolean isForecastTypeFull = Database.getisFullForecast(chatId);
+            // Get dayly forecast from weather forecast array.
+            JSONArray forecasts = weatherForecast.getJSONObject(index).getJSONArray("forecasts");
             // Parse forecast JSON object depend on forecast type for this chat.
-            JSONArray resultForecastStringArray = OpenWeatherApi.getArrayStringFromJsonWeatherForecast(
-                    weatherForecast, isForecastTypeFull, language);
-            final JSONObject forecastSpecificDay = resultForecastStringArray.getJSONObject(index);
-            final String forecastText = forecastSpecificDay.getString(forecastSpecificDay.keys().next());
+            final String forecastText = isForecastTypeFull
+                    ? ForecastFull.getForecastStringToSpecificDay(forecasts, language)
+                    : ForecastShort.getForecastStringToSpecificDay(forecasts, language);
             // Get the date forward from the forecast array.
             String dateForward = "";
-            if (index + 1 < resultForecastStringArray.length()) {
-                dateForward = OpenWeatherApi.getDayOfMonthFromForecastArray(resultForecastStringArray,
-                        index + 1, language);
+            if (index + 1 < weatherForecast.length()) {
+                LocalDateTime date = LocalDateTime.parse(weatherForecast.getJSONObject(index + 1).getString("date"));
+                dateForward = date.format(DateTimeFormatter.ofPattern("dd MMM", Locale.forLanguageTag(language)));
             }
             // Get the date backward from the forecast array.
             String dateBackward = "";
             if (index - 1 >= 0) {
-                dateBackward = OpenWeatherApi.getDayOfMonthFromForecastArray(resultForecastStringArray,
-                        index - 1, language);
+                LocalDateTime date = LocalDateTime.parse(weatherForecast.getJSONObject(index - 1).getString("date"));
+                dateBackward = date.format(DateTimeFormatter.ofPattern("dd MMM", Locale.forLanguageTag(language)));
             }
             // Create the keyboard for the forecast index.
             final List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();

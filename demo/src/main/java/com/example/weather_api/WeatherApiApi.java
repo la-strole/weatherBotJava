@@ -1,11 +1,15 @@
-package com.example;
+package com.example.weather_api;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import org.json.JSONArray;
 import org.json.JSONObject;
+
+import com.example.DataValidation;
 import com.example.exceptions.AppErrorCheckedException;
+import com.example.web_json_handlers.JsonHandler;
+
 import io.github.cdimascio.dotenv.Dotenv;
 
 /**
