@@ -46,6 +46,7 @@ public class ForecastFull {
             optionalAppend(result, forecastItem.getWindSpeed(), "windSpeed", "ms", true, rb);
             optionalAppend(result, forecastItem.getWindDeg(), "windDirection", "°", false, rb);
             optionalAppend(result, forecastItem.getWindGust(), "windGust", "ms", true, rb);
+            optionalAppend(result, forecastItem.getProbabilityOfPrecipitation(), "pop", "", false, rb);
             optionalAppend(result, forecastItem.getRainh(), "rain", "mmH", true, rb);
             optionalAppend(result, forecastItem.getSnowh(), "snow", "mmH", true, rb);
 
@@ -65,14 +66,14 @@ public class ForecastFull {
      * @param forecastItemString The forecast item string to be appended.
      * @param name The name of the forecast item to be used in the formatted string.
      * @param unit The unit of the forecast item to be used in the formatted string.
-     * @param translate A flag indicating whether the unit should be translated using the resource bundle.
+     * @param translateUnit A flag indicating whether the unit should be translated using the resource bundle.
      * @param rb The resource bundle to use for translation.
      * @throws AppErrorCheckedException If an error occurs during translation.
      */
     private static void optionalAppend(final StringBuilder result, final String forecastItemString, final String name, final String unit,
-            final boolean translate, final ResourceBundle rb) throws AppErrorCheckedException {
+            final boolean translateUnit, final ResourceBundle rb) throws AppErrorCheckedException {
 
-        final String unitString = translate ? DataValidation.getStringFromResourceBoundle(rb, unit) : unit;
+        final String unitString = translateUnit ? DataValidation.getStringFromResourceBoundle(rb, unit) : unit;
         if (forecastItemString != null && !forecastItemString.isEmpty()) {
             result.append(String.format("\t<b>%s:</b> %s%s%n",
                     DataValidation.getStringFromResourceBoundle(rb, name),
