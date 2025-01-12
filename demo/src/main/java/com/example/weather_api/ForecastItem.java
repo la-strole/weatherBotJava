@@ -85,7 +85,7 @@ public class ForecastItem {
             result.setSunset(LocalDateTime.parse(forecastJson.getString("sunset")));
             result.setTemp(forecastJson.getInt("temp")); // convert
             result.setFeelsLike(forecastJson.getInt("feelsLike")); // convert
-            result.setPressure(forecastJson.optString("humidity", null));
+            result.setPressure(forecastJson.optString("pressure", null));
             result.setHumidity(forecastJson.optString("humidity", null));
             result.setDescription(forecastJson.getString("description"));
             result.setClouds(forecastJson.optString("clouds", null));

@@ -18,15 +18,18 @@ public class ForecastShort {
     private static final String RUNTIME_ERROR = "Runtime error.";
 
     /**
-     * Parses a ForecastItem object and returns a formatted string containing relevant information.
+     * Parses a ForecastItem object and returns a formatted string containing
+     * relevant information.
      *
      * @param forecastItem The ForecastItem object to be parsed.
-     * @param language The language code for localization.
-     * @return A formatted string containing the timestamp, description, temperature, wind speed, rain, and snow information.
-     * @throws AppErrorCheckedException If an error occurs during translation or JSON parsing.
+     * @param language     The language code for localization.
+     * @return A formatted string containing the timestamp, description,
+     *         temperature, wind speed, rain, and snow information.
+     * @throws AppErrorCheckedException If an error occurs during translation or
+     *                                  JSON parsing.
      */
     public static String parser(final ForecastItem forecastItem, final String language)
-                    throws AppErrorCheckedException {
+            throws AppErrorCheckedException {
         final ResourceBundle rb = DataValidation.getMessages(language);
         final StringBuilder result = new StringBuilder();
         // Get the timestamp and timezone
@@ -47,20 +50,26 @@ public class ForecastShort {
             throw new AppErrorCheckedException(RUNTIME_ERROR);
         }
     }
-    
-    /** 
-     * Appends a formatted string to the provided StringBuilder based on the given forecast item string, name, unit,
+
+    /**
+     * Appends a formatted string to the provided StringBuilder based on the given
+     * forecast item string, name, unit,
      * translation flag, and resource bundle.
      *
-     * @param result The StringBuilder to append the formatted string to.
+     * @param result             The StringBuilder to append the formatted string
+     *                           to.
      * @param forecastItemString The forecast item string to be appended.
-     * @param name The name of the forecast item to be used in the formatted string.
-     * @param unit The unit of the forecast item to be used in the formatted string.
-     * @param translate A flag indicating whether the unit should be translated using the resource bundle.
-     * @param rb The resource bundle to use for translation.
+     * @param name               The name of the forecast item to be used in the
+     *                           formatted string.
+     * @param unit               The unit of the forecast item to be used in the
+     *                           formatted string.
+     * @param translate          A flag indicating whether the unit should be
+     *                           translated using the resource bundle.
+     * @param rb                 The resource bundle to use for translation.
      * @throws AppErrorCheckedException If an error occurs during translation.
      */
-    private static void optionalAppend(final StringBuilder result, final String forecastItemString, final String name, final String unit,
+    private static void optionalAppend(final StringBuilder result, final String forecastItemString, final String name,
+            final String unit,
             final boolean translate, final ResourceBundle rb) throws AppErrorCheckedException {
 
         final String unitString = translate ? DataValidation.getStringFromResourceBoundle(rb, unit) : unit;
@@ -77,15 +86,16 @@ public class ForecastShort {
         throw new IllegalStateException("Utility class");
     }
 
-    public static String getForecastStringToSpecificDay(JSONArray forecasts, String language) throws AppErrorCheckedException {    
+    public static String getForecastStringToSpecificDay(JSONArray forecasts, String language)
+            throws AppErrorCheckedException {
         StringBuilder text = new StringBuilder();
-        for (int i = 0; i < forecasts.length(); i++){
+        for (int i = 0; i < forecasts.length(); i += 2) {
             ForecastItem forecastItem = ForecastItem.deserializeFromJonObject(forecasts.getJSONObject(i));
-            if (i == 0){
-                text.append(String.format("<b>%s:%s</b>%n", 
-                    forecastItem.getCityName(), 
-                    forecastItem.getDt().format(DateTimeFormatter.ofPattern("dd.mm.yyyy", 
-                        Locale.forLanguageTag(language)))));
+            if (i == 0) {
+                text.append(String.format("<b>%s:\t%s</b>%n",
+                        forecastItem.getCityName(),
+                        forecastItem.getDt().format(DateTimeFormatter.ofPattern("dd.MM.yyyy",
+                                Locale.forLanguageTag(language)))));
             }
             text.append(parser(forecastItem, language));
         }

@@ -87,9 +87,9 @@ public class ForecastFull {
         for (int i = 0; i < forecasts.length(); i++){
             ForecastItem forecastItem = ForecastItem.deserializeFromJonObject(forecasts.getJSONObject(i));
             if (i == 0){
-                text.append(String.format("<b>%s:%s</b>%n", 
+                text.append(String.format("<b>%s:\t%s</b>%n", 
                     forecastItem.getCityName(), 
-                    forecastItem.getDt().format(DateTimeFormatter.ofPattern("dd.mm.yyyy", 
+                    forecastItem.getDt().format(DateTimeFormatter.ofPattern("dd.MM.yyyy", 
                         Locale.forLanguageTag(language)))));
             }
             text.append(parser(forecastItem,  language));
