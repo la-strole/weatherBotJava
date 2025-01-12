@@ -118,30 +118,28 @@ public class GetForecastWeatherOpenWeather extends GetForecastWeather {
             JSONArray resultArray = new JSONArray();
             Integer date = null;
             JSONArray forecasts = new JSONArray();
-            JSONObject item;
+            JSONObject  item = new JSONObject();
             int count = apiResponseForecastWeather.getJSONObject(0).getInt("cnt");
             for (int i = 0; i < count; i++) {
                 ForecastItem forecastItem = forecastWeatherParser(apiResponseForecastWeather.getJSONObject(0), i);
-                if (date == null) {
+                if (i == 0) {
+                    item.put("date", forecastItem.getDt().toString());
                     date = forecastItem.getDt().getDayOfMonth();
                 } 
                 if (date == forecastItem.getDt().getDayOfMonth()){
                     forecasts.put(ForecastItem.serializeToJsonObject(forecastItem));
-                } else if (i == count - 1){
-                    item = new JSONObject();
-                    item.put("date", forecastItem.getDt().toString());
-                    item.put("forecasts", forecasts);
-                    resultArray.put(item);
                 } else {
-                    item = new JSONObject();
-                    item.put("date", forecastItem.getDt().toString());
                     item.put("forecasts", forecasts);
                     resultArray.put(item);
+                    item = new JSONObject();
+                    item.put("date", forecastItem.getDt().toString());
                     date = forecastItem.getDt().getDayOfMonth();
                     forecasts = new JSONArray();
                     forecasts.put(ForecastItem.serializeToJsonObject(forecastItem));
                 }
             }
+            item.put("forecasts", forecasts);
+            resultArray.put(item);
             
             // Check if result array is valid
             if (!isJsonArrayValid(resultArray)){
