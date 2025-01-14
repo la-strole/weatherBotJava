@@ -6,7 +6,6 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
-import com.example.DataValidation;
 import com.example.exceptions.AppErrorCheckedException;
 
 import java.util.logging.Level;
@@ -55,8 +54,7 @@ public class TlgBot implements LongPollingSingleThreadUpdateConsumer {
             // Get original message
             Message originalMsg = update.getMessage().getReplyToMessage();
             // If it is reply to Add city settings
-            if (DataValidation.getMessages(language).getString("settingsCommandAddCityText")
-                    .equals(originalMsg.getText())) {
+            if (originalMsg.getText().startsWith("AddCity")) {
                 System.out.println("City in the box!");
             }
         }

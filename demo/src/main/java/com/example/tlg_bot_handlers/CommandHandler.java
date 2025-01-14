@@ -6,6 +6,7 @@ import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.json.JSONArray;
 import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -42,17 +43,17 @@ public class CommandHandler {
                 handleCommandHelp();
                 break;
             }
-            /*
-            case "/settings": {
+            case "/subscriptions": {
                 // Get chatId from message.
-                handleCommandSettings();
+                handleCommandShowSubscriptions();
                 break;
             }
-            case "/settings_add_city": {
+            
+            case "/subscriptions_add": {
                 handleCommandSettingsAddCity();
                 break;
             }
-            */
+            
             case "/change_forecast_type": {
                 handleCommandChangeForecastType();
                 break;
@@ -73,10 +74,10 @@ public class CommandHandler {
                     DataValidation.getStringFromResourceBoundle(rb, "startCommandDescription")));
             commandsList.add(new BotCommand("help",
                     DataValidation.getStringFromResourceBoundle(rb, "helpCommandDescription")));
-            commandsList.add(new BotCommand("settings",
-                    DataValidation.getStringFromResourceBoundle(rb, "settingsCommandDescription")));
-            commandsList.add(new BotCommand("settings_add_city",
-                    DataValidation.getStringFromResourceBoundle(rb, "settingsCommandAddCityDescription")));
+            commandsList.add(new BotCommand("subscriptions",
+                    DataValidation.getStringFromResourceBoundle(rb, "subscriptionsCommandDescription")));
+            commandsList.add(new BotCommand("subscriptions_add",
+                    DataValidation.getStringFromResourceBoundle(rb, "subscriptionsCommandAddCityDescription")));
             commandsList.add(new BotCommand("change_forecast_type",
                     DataValidation.getStringFromResourceBoundle(rb, "settingsCommandChangeForecastTypeDescription")));
             final SendMessage msg = SendMessage.builder().chatId(chatId)
@@ -106,51 +107,47 @@ public class CommandHandler {
 
     }
 
-    // TODO add support for subscriptions.
-    /*
 
-    private void handleCommandSettings() {
+    private void handleCommandShowSubscriptions() {
         // Get chat ID from the message.
         final long chatId = update.getMessage().getChatId();
         String msgText;
         final ResourceBundle rb = DataValidation.getMessages(language);
-        // Get settings array from the database.
+        // Get subscriptions array from the database.
         try {
-            final String subscriptionString = Database.getSubscribeString(chatId);
+            final JSONArray subscriptions = Database.getSubscription(chatId);
             // If there are subscriptions.
-            if (!subscriptionString.isEmpty()) {
-                msgText = DataValidation.getStringFromResourceBoundle(rb, "settingsCommandAnswer")
-                        + "\n" + subscriptionString;
+            if (!subscriptions.isEmpty()) {
+                // StringBuilder cityList
+                msgText = DataValidation.getStringFromResourceBoundle(rb, "subscriptionsList")
+                        + "\n";
                 // If the subscriptions list is empty.
             } else {
                 msgText = DataValidation.getStringFromResourceBoundle(rb,
-                        "settingsCommandEmptyAnswer");
+                        "subscriptionsEmpty");
             }
-        } catch (final AppErrorCheckedException e) {
-            SendTlgMessage.sendDefaultError(telegramClient, language, chatId);
-            return;
-        }
-        // Send message
-        try {
+            // Send message
             SendTlgMessage.send(telegramClient, chatId, msgText);
         } catch (final AppErrorCheckedException e) {
-            logger.severe("CommandHandler:HandleCommandSettings: " + e);
+            SendTlgMessage.sendDefaultError(telegramClient, language, chatId);
         }
+
     }
 
     private void handleCommandSettingsAddCity() {
         // Send a message to the user to ask for their city name.
-        String msgText;
+        String msgText = "AddCity:\n";
         final long chatID = update.getMessage().getChatId();
         try {
-            msgText = DataValidation.getStringFromResourceBoundle(
-                    DataValidation.getMessages(language), "settingsCommandAddCityText");
-            SendTlgMessage.send(telegramClient, chatID, msgText);
+            
+            msgText = msgText + DataValidation.getStringFromResourceBoundle(
+                    DataValidation.getMessages(language), "subscriptionsCommandAddCityNameText");
+            SendTlgMessage.sendForceReply(telegramClient, chatID, msgText);
         } catch (final AppErrorCheckedException e) {
             SendTlgMessage.sendDefaultError(telegramClient, language, chatID);
         }
     }
-*/
+
     private void handleCommandChangeForecastType() {
         // Get current forecast type from the database
         final long chatID = update.getMessage().getChatId();

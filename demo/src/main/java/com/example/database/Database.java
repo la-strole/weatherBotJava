@@ -7,6 +7,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -223,61 +225,27 @@ public class Database {
         }
     }
 
-    // TODO Add support for subscriptions.
-    /*
-    public static void insertSubscribe(final long chatId, final Double lon, final Double lat, final long time,
-            final String language) throws AppErrorCheckedException {
+    public static void addSubscription(final long chatId, final Double lon, final Double lat, String cityName,
+            final LocalTime time) throws AppErrorCheckedException {
 
-        // Get the city name from the geocoding API.
-        final JSONArray cityNamesArray = GeocodingApiOpenWeather.getCitiesNamesByCoordinatesArray(lon, lat);
-        // Get the local city name.
-        String localCityName;
-        try {
-            localCityName = cityNamesArray.getJSONObject(0).getJSONObject("local_names")
-                    .optString(language, "");
-            if (localCityName.isEmpty()) {
-                localCityName = cityNamesArray.getJSONObject(0).getString("name");
-            }
-        } catch (final JSONException e) {
-            logger.log(Level.SEVERE, e::toString);
+        final String insertSQL = "INSERT INTO subscribes (chatId, cityName, lon, lat, time, created_at) VALUES (?, ?, ?, ?, ?, ?)";
+        try (Connection conn = DriverManager.getConnection(DATABASE_URL);
+                PreparedStatement insertStmt = conn.prepareStatement(insertSQL)) {
+            insertStmt.setLong(1, chatId);
+            insertStmt.setString(2, cityName);
+            insertStmt.setDouble(3, lon);
+            insertStmt.setDouble(4, lat);
+            insertStmt.setString(5, time.toString());
+            insertStmt.setString(6, Instant.now().toString());
+            insertStmt.executeUpdate();
+        } catch (final SQLException e) {
+            logger.log(Level.SEVERE, e.getMessage());
             throw new AppErrorCheckedException(RUNTIME_ERROR);
         }
-        // Check if the chatId is already in the database
-        if (!ifChatIdInDb(chatId, "subscribes")) {
-            final String insertSQL = "INSERT INTO subscribes (chatId, cityName, lon, lat, time, created_at) VALUES (?, ?, ?, ?, ?, ?)";
-            try (Connection conn = DriverManager.getConnection(DATABASE_URL);
-                    PreparedStatement insertStmt = conn.prepareStatement(insertSQL)) {
-                insertStmt.setLong(1, chatId);
-                insertStmt.setString(2, localCityName);
-                insertStmt.setDouble(3, lon);
-                insertStmt.setDouble(4, lat);
-                insertStmt.setTimestamp(5, new Timestamp(time));
-                insertStmt.setString(6, Instant.now().toString());
-                insertStmt.executeUpdate();
-            } catch (final SQLException e2) {
-                logger.log(Level.SEVERE, e2::toString);
-                throw new AppErrorCheckedException(RUNTIME_ERROR);
-            }
-        } else {
-            final String updateSQL = "UPDATE subscribes SET cityName = ? , lon = ? , lat = ? , time = ? , created_at = ?  WHERE chatId = ?";
-            try (Connection conn = DriverManager.getConnection(DATABASE_URL);
-                    PreparedStatement updateStmt = conn.prepareStatement(updateSQL)) {
-                updateStmt.setString(1, localCityName);
-                updateStmt.setDouble(2, lon);
-                updateStmt.setDouble(3, lat);
-                updateStmt.setTimestamp(4, new Timestamp(time));
-                updateStmt.setString(5, Instant.now().toString());
-                updateStmt.setLong(6, chatId);
-                updateStmt.executeUpdate();
-            } catch (final SQLException e) {
-                logger.log(Level.SEVERE, e::toString);
-                throw new AppErrorCheckedException(RUNTIME_ERROR);
-            }
-        }
+
     }
 
-
-    public static JSONArray getSubscribe(final long chatId) throws AppErrorCheckedException {
+    public static JSONArray getSubscription(final long chatId) throws AppErrorCheckedException {
         final String selectSQL = "SELECT cityName, lon, lat, time FROM subscribes WHERE chatId = ?";
         try (Connection conn = DriverManager.getConnection(DATABASE_URL);
                 PreparedStatement selectStmt = conn.prepareStatement(selectSQL)) {
@@ -293,35 +261,13 @@ public class Database {
                 result.put(obj);
             }
             return result;
-        } catch (final SQLException e) {
+        } catch (final SQLException | JSONException e) {
             logger.log(Level.SEVERE, e::toString);
             throw new AppErrorCheckedException(RUNTIME_ERROR);
         }
     }
 
-    public static String getSubscribeString(final long chatId) throws AppErrorCheckedException {
 
-        final StringBuilder subscription = new StringBuilder();
-        final JSONArray rs = getSubscribe(chatId);
-
-        // If there are subscriptions.
-        if (!rs.isEmpty()) {
-            // For each row (row is JSONObject)
-            for (int i = 0; i < rs.length(); i++) {
-                try {
-                    final JSONObject obj = rs.getJSONObject(i);
-                    // Append the city name and time.
-                    subscription.append(String.format("%s\t%s%n", obj.getString("cityName"),
-                            obj.getString("time")));
-                } catch (final JSONException e) {
-                    logger.log(Level.SEVERE, e::toString);
-                    throw new AppErrorCheckedException(RUNTIME_ERROR);
-                }
-            }
-        }
-        return subscription.toString();
-    }
-    */
     /**
      * Inserts or updates the full forecast status for a given chat ID in the
      * database.
