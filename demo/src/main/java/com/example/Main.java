@@ -31,7 +31,7 @@ public class Main {
                 new TelegramBotsLongPollingApplication()) {
             botsApplication.registerBot(botToken, new TlgBot(botToken));
             Database.createTable();
-            logger.fine("TlgBot successfully started!");
+            logger.log(Level.INFO, () -> "TlgBot successfully started!");
             // Run the scheduled deletion task
             ScheduledDeletion.run(15);
             Thread.currentThread().join();
