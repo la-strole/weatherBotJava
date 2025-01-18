@@ -53,7 +53,7 @@ public class Database {
         final String createTable3SQL = "CREATE TABLE IF NOT EXISTS subscribes ("
                 + "id INT AUTO_INCREMENT PRIMARY KEY," + "chatId INT NOT NULL,"
                 + "lon REAL NOT NULL," + "lat REAL NOT NULL," + "cityName TEXT NOT NULL,"
-                + "time TEXT," + "created_at TEXT NOT NULL" + ")";
+                + "time TEXT," + "created_at TEXT NOT NULL," + "UNIQUE(lon,lat,time)" + ")";
         final String createTable4SQL = "CREATE TABLE IF NOT EXISTS fullForecast ("
                 + "id INT AUTO_INCREMENT PRIMARY KEY," + "chatId INT NOT NULL,"
                 + "isFullForecast INT NOT NULL," + "created_at TEXT NOT NULL" + ")";
@@ -291,7 +291,7 @@ public class Database {
                 final JSONObject obj = new JSONObject();
                 obj.put("cityName", rs.getString("cityName"));
                 obj.put("lon", rs.getDouble("lon"));
-                
+
                 obj.put("lat", rs.getDouble("lat"));
                 obj.put("time", rs.getString("time"));
                 result.put(obj);
@@ -319,16 +319,17 @@ public class Database {
      *               subscription
      * @throws AppErrorCheckedException if a database access error occurs
      */
-    public static void cancelSubscription(long chatId, double lon, double lat, LocalTime time) throws AppErrorCheckedException{
+    public static void cancelSubscription(long chatId, double lon, double lat, LocalTime time)
+            throws AppErrorCheckedException {
         final String updateSQL = "DELETE FROM subscribes WHERE chatId = ? AND lon = ? AND lat = ? AND time = ?";
         try (Connection conn = DriverManager.getConnection(DATABASE_URL);
-            PreparedStatement updateStmt = conn.prepareStatement(updateSQL)){
-                updateStmt.setLong(1, chatId);
-                updateStmt.setDouble(2, lon);
-                updateStmt.setDouble(3, lat);
-                updateStmt.setString(4, time.toString());
-                updateStmt.executeUpdate();
-        } catch (SQLException  e){
+                PreparedStatement updateStmt = conn.prepareStatement(updateSQL)) {
+            updateStmt.setLong(1, chatId);
+            updateStmt.setDouble(2, lon);
+            updateStmt.setDouble(3, lat);
+            updateStmt.setString(4, time.toString());
+            updateStmt.executeUpdate();
+        } catch (SQLException e) {
             logger.log(Level.SEVERE, e::toString);
             throw new AppErrorCheckedException(RUNTIME_ERROR);
         }
