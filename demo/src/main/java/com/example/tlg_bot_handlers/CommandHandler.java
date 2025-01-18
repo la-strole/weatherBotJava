@@ -124,10 +124,11 @@ public class CommandHandler {
                     String text = String.format("<b>%s %s</b>%nlon=%f%nlat=%f",
                             subscriptionRow.getString("cityName"),
                             subscriptionRow.getString("time"),
-                            subscriptionRow.getFloat("lon"), subscriptionRow.getFloat("lat"));
+                            subscriptionRow.getDouble("lon"), subscriptionRow.getDouble("lat"));
                     String buttonText = DataValidation.getStringFromResourceBoundle(
                             DataValidation.getMessages(language), "subscriptionsRemoveSunscriptionButtonText");
-                    InlineKeyboardButton button = InlineKeyboardButton.builder().callbackData("RS").text(buttonText)
+                    InlineKeyboardButton button = InlineKeyboardButton.builder()
+                            .callbackData(CallbackHandler.CallbackValues.RS.name()).text(buttonText)
                             .build();
                     List<List<InlineKeyboardButton>> keyboard = List.of(List.of(button));
                     SendTlgMessage.send(telegramClient, chatId, text, keyboard);
