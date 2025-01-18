@@ -178,13 +178,14 @@ public class SendTlgMessage {
      * Edits a message text in a Telegram chat.
      *
      * @param telegramClient The Telegram client to use for sending the message.
-     * @param messageId The ID of the message to edit.
-     * @param chatId The ID of the chat where the message is located.
-     * @param messageText The new text for the message.
-     * @param keyboard The inline keyboard to attach to the message.
-     * @throws AppErrorCheckedException If an error occurs while editing the message.
+     * @param messageId      The ID of the message to edit.
+     * @param chatId         The ID of the chat where the message is located.
+     * @param messageText    The new text for the message.
+     * @param keyboard       The inline keyboard to attach to the message.
+     * @throws AppErrorCheckedException If an error occurs while editing the
+     *                                  message.
      */
-    public static void editMessagText(final TelegramClient telegramClient, final int messageId, final long chatId,
+    public static void editMessageWithKeyboard(final TelegramClient telegramClient, final int messageId, final long chatId,
             final String messageText, final List<List<InlineKeyboardButton>> keyboard) throws AppErrorCheckedException {
         final List<InlineKeyboardRow> keyboardMarkup = new ArrayList<>();
         for (final List<InlineKeyboardButton> row : keyboard) {
@@ -203,6 +204,20 @@ public class SendTlgMessage {
         final EditMessageText msg = EditMessageText.builder().chatId(chatId).messageId(messageId)
                 .text(messageText).parseMode("HTML")
                 .replyMarkup(new InlineKeyboardMarkup(keyboardMarkup)).build();
+        try {
+            telegramClient.execute(msg);
+        } catch (final TelegramApiException e) {
+            logger.log(Level.SEVERE, e::toString);
+            throw new AppErrorCheckedException(RUNTIME_ERROR);
+        }
+    }
+
+    public static void editMessageWithoutKeyboard(final TelegramClient telegramClient, final int messageId, final long chatId,
+            final String messageText) throws AppErrorCheckedException {
+        
+        final EditMessageText msg = EditMessageText.builder().chatId(chatId).messageId(messageId)
+                .text(messageText).parseMode("HTML")
+                .build();
         try {
             telegramClient.execute(msg);
         } catch (final TelegramApiException e) {
