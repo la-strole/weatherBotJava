@@ -1,15 +1,12 @@
 package com.example.tlg_bot_handlers;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
 import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.api.objects.message.Message;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
-
-import com.example.exceptions.AppErrorCheckedException;
-
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class TlgBot implements LongPollingSingleThreadUpdateConsumer {
 
@@ -42,21 +39,13 @@ public class TlgBot implements LongPollingSingleThreadUpdateConsumer {
             mh.handleMessage();
             // If the update is a callback query.
         } else if (update.hasCallbackQuery()) {
-            try {
-                CallbackHandler cbh = new CallbackHandler(telegramClient, update, language);
-                cbh.callbackHandle();
-            } catch (AppErrorCheckedException e) {
-                return;
-            }
+            CallbackHandler cbh = new CallbackHandler(telegramClient, update, language);
+            cbh.callbackHandle();
             // If the update is reply.
         } else if (update.hasMessage() && update.getMessage().hasText()
                 && update.getMessage().isReply()) {
-            // Get original message
-            Message originalMsg = update.getMessage().getReplyToMessage();
-            // If it is reply to Add city settings
-            if (originalMsg.getText().startsWith("AddCity")) {
-                System.out.println("City in the box!");
-            }
+            ReplyMessageHandler rmh = new ReplyMessageHandler(update, telegramClient, language);
+            rmh.handle();
         }
     }
 }

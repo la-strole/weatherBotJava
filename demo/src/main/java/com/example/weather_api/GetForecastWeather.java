@@ -30,7 +30,7 @@ public abstract class GetForecastWeather {
                     ForecastItem.deserializeFromJonObject(forecast);
                 }
             } catch (JSONException | AppErrorCheckedException e) {
-                localLogger.log(Level.SEVERE, e.getMessage());
+                localLogger.log(Level.SEVERE, e::toString);
                 return false;
             }
         }

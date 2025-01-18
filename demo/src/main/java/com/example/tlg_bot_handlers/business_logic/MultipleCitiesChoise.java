@@ -1,4 +1,4 @@
-package com.example.tlg_bot_handlers.message_constructors;
+package com.example.tlg_bot_handlers.business_logic;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,7 +38,7 @@ public class MultipleCitiesChoise {
      *                             chosen city with the original message).
      * @param language             The language of the message.
      */
-    public static void sendMessageToChooseCity(final JSONArray geocodingApiResponse,
+    public static void sendMessageToChooseCity(boolean isItSubscription, final JSONArray geocodingApiResponse,
             final TelegramClient telegramClient,
             final long chatId, final int msgId, final String language) {
         // Add inline keyboard buttons.
@@ -50,21 +50,22 @@ public class MultipleCitiesChoise {
                         city.getString(GeocodingApi.fields.CITY_NAME.toString()),
                         city.getString(GeocodingApi.fields.COUNTRY.toString()),
                         city.optString(GeocodingApi.fields.STATE.toString(), ""));
+                String callBackValue = isItSubscription ? CallbackHandler.CallbackValues.CS.name()
+                        : CallbackHandler.CallbackValues.C.name();
                 final InlineKeyboardButton button = InlineKeyboardButton.builder().text(buttonText)
-                        .callbackData(String.format("%s%d",
-                                CallbackHandler.CallbackValues.C.name(), i))
+                        .callbackData(String.format("%s:%d", callBackValue, i))
                         .build();
                 final List<InlineKeyboardButton> row = new ArrayList<>();
                 row.add(button);
                 keyboard.add(row);
             } catch (final JSONException e) {
-                logger.log(Level.SEVERE, e.getMessage());
+                logger.log(Level.SEVERE, e::toString);
                 SendTlgMessage.sendDefaultError(telegramClient, language, chatId);
                 return;
             }
         }
         try {
-            // Send the message with multiple cities to choose.
+            // Send the reply message with multiple cities to choose.
             final String msgText = DataValidation.getStringFromResourceBoundle(
                     DataValidation.getMessages(language), "multipleCities");
             SendTlgMessage.sendReplyWithKeyboard(telegramClient, chatId, msgText,
@@ -101,14 +102,14 @@ public class MultipleCitiesChoise {
         int index;
         try {
             // Get the city index from the callback data.
-            index = Integer.parseInt(callbackText.substring(1));
-            originalMsgId = originalMessage.getReplyToMessage().getMessageId();
+            index = Integer.parseInt(callbackText.split(":")[1]);
+            originalMsgId = originalMessage.getMessageId();
         } catch (NumberFormatException | IndexOutOfBoundsException e) {
-            logger.log(Level.SEVERE, e.getMessage());
+            logger.log(Level.SEVERE, e::toString);
             SendTlgMessage.sendDefaultError(telegramClient, language, chatId);
             return new JSONObject();
         }
-        // Get the city coordinates from the database.
+        // Get the cities coordinates Array from the database.
         try {
             citiesCoordinates = Database.getCoordinates(chatId, originalMsgId);
         } catch (final AppErrorCheckedException e) {
@@ -121,7 +122,7 @@ public class MultipleCitiesChoise {
             SendTlgMessage.sendDefaultError(telegramClient, language, chatId);
             return new JSONObject();
         }
-        // Get city coordinates from the cities coordinates.
+        // Get city coordinates from the cities coordinates Array.
         final double lon = citiesCoordinates.getJSONObject(index).getDouble("lon");
         final double lat = citiesCoordinates.getJSONObject(index).getDouble("lat");
         final JSONObject result = new JSONObject();

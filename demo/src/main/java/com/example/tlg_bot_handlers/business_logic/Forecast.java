@@ -1,4 +1,4 @@
-package com.example.tlg_bot_handlers.message_constructors;
+package com.example.tlg_bot_handlers.business_logic;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -22,9 +22,9 @@ import com.example.tlg_bot_handlers.forecast_item_parsers.ForecastFull;
 import com.example.tlg_bot_handlers.forecast_item_parsers.ForecastShort;
 import com.example.weather_api.GetForecastWeatherOpenWeather;
 
-public class ForecastMessage {
+public class Forecast {
 
-    private static final Logger logger = Logger.getLogger(ForecastMessage.class.getName());
+    private static final Logger logger = Logger.getLogger(Forecast.class.getName());
 
     /**
      * This function handles the callback for forecast messages. It retrieves the city coordinates from the original message,
@@ -52,7 +52,7 @@ public class ForecastMessage {
             lat = Double.parseDouble(latLine.split(":")[1].trim());
             lon = Double.parseDouble(lonLine.split(":")[1].trim());
         } catch (final Exception e) {
-            logger.log(Level.SEVERE, e.getMessage());
+            logger.log(Level.SEVERE, e::toString);
             SendTlgMessage.sendDefaultError(telegramClient, language, chatId);
             return;
         }
@@ -170,7 +170,7 @@ public class ForecastMessage {
         }
     }
 
-    private ForecastMessage() {
+    private Forecast() {
         // Private constructor to hide the implicit public one
         throw new IllegalStateException("Utility class");
     }

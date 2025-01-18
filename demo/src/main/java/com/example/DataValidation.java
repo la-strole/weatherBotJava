@@ -92,15 +92,27 @@ public class DataValidation {
     }
 
     public static boolean isCityNameValid(final String cityName) {
-        return (cityName.matches("^[\\p{L}[\\s'-]]+$") && cityName.length() <= 25);
+        boolean result = cityName.matches("^[\\p{L}[\\s'-]]+$") && cityName.length() <= 25;
+        if (!result){
+            logger.log(Level.SEVERE, () -> String.format("Invalid city name: %s", cityName));
+        }
+        return result;
     }
 
     public static boolean isLongitudeValid(final Double lon) {
-        return (lon >= -180 && lon <= 180);
+        boolean result = (lon >= -180 && lon <= 180);
+        if (!result){
+            logger.log(Level.SEVERE, () -> String.format("Invalid lon: %f", lon));
+        }
+        return result;
     }
 
     public static boolean isLatitudeValid(final Double lat) {
-        return (lat >= -90 && lat <= 90);
+        boolean result =  (lat >= -90 && lat <= 90);
+        if (!result){
+            logger.log(Level.SEVERE, () -> String.format("Invalid lat: %f", lat));
+        }
+        return result;
     }
 
     public static boolean isTableNameValid(final String tableName) {

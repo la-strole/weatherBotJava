@@ -10,14 +10,16 @@ import org.telegram.telegrambots.meta.api.objects.message.Message;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import com.example.exceptions.AppErrorCheckedException;
-import com.example.tlg_bot_handlers.message_constructors.ForecastMessage;
-import com.example.tlg_bot_handlers.message_constructors.MultipleCitiesChoise;
-import com.example.tlg_bot_handlers.message_constructors.SendCurrentWeatherForSingleCity;
+import com.example.tlg_bot_handlers.business_logic.Forecast;
+import com.example.tlg_bot_handlers.business_logic.MultipleCitiesChoise;
+import com.example.tlg_bot_handlers.business_logic.CurrentWeatherForSingleCity;
+import com.example.tlg_bot_handlers.business_logic.Subscription;
 
 public class CallbackHandler {
     public enum CallbackValues {
         F, // Give me the forecast.
         C, // Ci - I choose a city from multiple cities with index i.
+        CS, // City subscribe.
         FI, // FIi - Forward and Backward in Forecast index.
     }
 
@@ -27,51 +29,80 @@ public class CallbackHandler {
     String language;
     String callbackText;
 
+    Update update;
     Message originalMessage;
 
-    public CallbackHandler(final TelegramClient telegramClient, final Update update, final String language)
-            throws AppErrorCheckedException {
+    public CallbackHandler(final TelegramClient telegramClient, final Update update, final String language) {
         this.telegramClient = telegramClient;
         callbackText = update.getCallbackQuery().getData();
         chatId = update.getCallbackQuery().getMessage().getChatId();
         this.language = language;
-        try {
-            originalMessage = (Message) update.getCallbackQuery().getMessage();
-        } catch (final Exception e) {
-            logger.severe(String.format(
-                    "Original message inaccessable. chat_id=%d. callback=%s",
-                    chatId, callbackText));
-            throw new AppErrorCheckedException(
-                    " Runtime Error.");
-        }
+        this.update = update;
     }
 
     /**
-     * Handles different types of callback queries based on the received callback text.
+     * Handles different types of callback queries based on the received callback
+     * text.
      * The callback text is used to determine the type of action to perform.
      *
-     * @throws AppErrorCheckedException If there is an error accessing the original message.
+     * @throws AppErrorCheckedException If there is an error accessing the original
+     *                                  message.
      */
     public void callbackHandle() {
-        if (callbackText.startsWith(CallbackValues.C.name())) {
-            // Handle multiple cities choice.
-            final JSONObject coordinates = MultipleCitiesChoise.callbackMultipleCitiesChoise(callbackText, originalMessage,
+        if (callbackText.split(":")[0].equals(CallbackValues.C.name())
+                || callbackText.split(":")[0].equals(CallbackValues.CS.name())) {
+            // Handle multiple cities choice for current weather message or for
+            // subscription.
+            try {
+                Message replyMessage = (Message) update.getCallbackQuery().getMessage();
+                originalMessage = replyMessage.getReplyToMessage();
+            } catch (final Exception e) {
+                logger.severe(String.format(
+                        "Original message inaccessable. chat_id=%d. callback=%s",
+                        chatId, callbackText));
+            }
+            boolean isSubscription = callbackText.split(":")[0].equals(CallbackValues.CS.name());
+            // Get coordinates for the city by index from callback text.
+            final JSONObject coordinates = MultipleCitiesChoise.callbackMultipleCitiesChoise(callbackText,
+                    originalMessage,
                     telegramClient, chatId, language);
             if (!coordinates.isEmpty()) {
                 try {
                     final double lon = coordinates.getDouble("lon");
                     final double lat = coordinates.getDouble("lat");
-                    SendCurrentWeatherForSingleCity.sendMessage(lon, lat, telegramClient, language, chatId);
+                    if (isSubscription) {
+                        Subscription.callBackHandler(telegramClient, chatId, lon, lat, originalMessage.getText(),
+                                language);
+                    } else {
+                        CurrentWeatherForSingleCity.sendMessage(lon, lat, telegramClient, language, chatId);
+                    }
                 } catch (final JSONException e) {
-                    logger.log(Level.SEVERE, e.getMessage());
+                    logger.log(Level.SEVERE, e::toString);
+                    SendTlgMessage.sendDefaultError(telegramClient, language, chatId);
                 }
             }
+
         } else if (callbackText.equals(CallbackValues.F.name())) {
             // Handle the forecast request.
-            ForecastMessage.callbackForecast(originalMessage, telegramClient, chatId, language);
+            try {
+                originalMessage = (Message) update.getCallbackQuery().getMessage();
+            } catch (Exception e){
+                logger.log(Level.SEVERE, e::toString);
+                SendTlgMessage.sendDefaultError(telegramClient, language, chatId);
+                return;
+            }
+            Forecast.callbackForecast(originalMessage, telegramClient, chatId, language);
+
         } else if (callbackText.startsWith(CallbackValues.FI.name())) {
-            // Handle the forecast index.
-            ForecastMessage.callbackForecastNavigation(callbackText, telegramClient, originalMessage.getMessageId(),
+            // Handle the forecast navivation index.
+            try {
+                originalMessage = (Message) update.getCallbackQuery().getMessage();
+            } catch (Exception e){
+                logger.log(Level.SEVERE, e::toString);
+                SendTlgMessage.sendDefaultError(telegramClient, language, chatId);
+                return;
+            }
+            Forecast.callbackForecastNavigation(callbackText, telegramClient, originalMessage.getMessageId(),
                     chatId, language);
         }
     }

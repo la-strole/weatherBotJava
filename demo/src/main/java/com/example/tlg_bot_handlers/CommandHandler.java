@@ -24,12 +24,13 @@ public class CommandHandler {
     TelegramClient telegramClient;
     Update update;
     String language;
+    long chatId;
 
     public CommandHandler(final TelegramClient client, final Update update, final String language) {
         telegramClient = client;
         this.language = language;
         this.update = update;
-        logger.setLevel(Level.FINE);
+        this.chatId = update.getMessage().getChatId();
     }
 
     public void handleCommand() {
@@ -67,7 +68,6 @@ public class CommandHandler {
         // Create bot commands.
         final List<BotCommand> commandsList = new ArrayList<>();
         final ResourceBundle rb = DataValidation.getMessages(language);
-        final long chatId = update.getMessage().getChatId();
 
         try {
             commandsList.add(new BotCommand("start",
@@ -85,18 +85,17 @@ public class CommandHandler {
                     .build();
             telegramClient.execute(new SetMyCommands(commandsList));
             telegramClient.execute(msg);
-            logger.fine("The bot commands for the menu button have been successfully created.");
+            logger.log(Level.FINE, "The bot commands for the menu button have been successfully created.");
         } catch (final AppErrorCheckedException e) {
             SendTlgMessage.sendDefaultError(telegramClient, language, chatId);
         } catch (final TelegramApiException e) {
-            logger.severe("handleCommandStart:\t" + e);
+            logger.log(Level.SEVERE, e::toString);
             SendTlgMessage.sendDefaultError(telegramClient, language, chatId);
         }
     }
 
     private void handleCommandHelp() {
         // Send help message.
-        final long chatId = update.getMessage().getChatId();
         try {
             final ResourceBundle rb = DataValidation.getMessages(language);
             final String msgText = DataValidation.getStringFromResourceBoundle(rb, "helpCommandAnswer");
@@ -107,10 +106,8 @@ public class CommandHandler {
 
     }
 
-
     private void handleCommandShowSubscriptions() {
         // Get chat ID from the message.
-        final long chatId = update.getMessage().getChatId();
         String msgText;
         final ResourceBundle rb = DataValidation.getMessages(language);
         // Get subscriptions array from the database.
@@ -137,38 +134,34 @@ public class CommandHandler {
     private void handleCommandSettingsAddCity() {
         // Send a message to the user to ask for their city name.
         String msgText = "AddCity:\n";
-        final long chatID = update.getMessage().getChatId();
         try {
-            
             msgText = msgText + DataValidation.getStringFromResourceBoundle(
                     DataValidation.getMessages(language), "subscriptionsCommandAddCityNameText");
-            SendTlgMessage.sendForceReply(telegramClient, chatID, msgText);
+            SendTlgMessage.sendForceReply(telegramClient, chatId, msgText);
         } catch (final AppErrorCheckedException e) {
-            SendTlgMessage.sendDefaultError(telegramClient, language, chatID);
+            SendTlgMessage.sendDefaultError(telegramClient, language, chatId);
         }
     }
 
     private void handleCommandChangeForecastType() {
         // Get current forecast type from the database
-        final long chatID = update.getMessage().getChatId();
         final ResourceBundle rb = DataValidation.getMessages(language);
         try {
-            final boolean currentForecastType = Database.getisFullForecast(chatID);
-            Database.insertIsFullForecast(chatID, !currentForecastType);
+            final boolean currentForecastType = Database.getisFullForecast(chatId);
+            Database.insertIsFullForecast(chatId, !currentForecastType);
             final String forecastType = currentForecastType
                     ? DataValidation.getStringFromResourceBoundle(rb, "ForecastTypeShort")
                     : DataValidation.getStringFromResourceBoundle(rb, "ForecastTypeFull");
             final String msgText = DataValidation.getStringFromResourceBoundle(rb,
                     "settingsCommandChangeForecastTypeAnswer")
                     + " " + forecastType;
-            SendTlgMessage.send(telegramClient, chatID, msgText);
+            SendTlgMessage.send(telegramClient, chatId, msgText);
         } catch (final AppErrorCheckedException e) {
-            SendTlgMessage.sendDefaultError(telegramClient, language, chatID);
+            SendTlgMessage.sendDefaultError(telegramClient, language, chatId);
         }
     }
 
     private void handleCommandDefault() {
-        final long chatId = update.getMessage().getChatId();
         final ResourceBundle rb = DataValidation.getMessages(language);
         String msgText;
         try {
@@ -179,7 +172,7 @@ public class CommandHandler {
         try {
             SendTlgMessage.send(telegramClient, chatId, msgText);
         } catch (final AppErrorCheckedException e) {
-            logger.severe("CommandHandler:handleCommandDefault: " + e);
+            logger.log(Level.SEVERE, e::toString);
         }
     }
 }

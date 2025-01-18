@@ -1,4 +1,4 @@
-package com.example.tlg_bot_handlers.message_constructors;
+package com.example.tlg_bot_handlers.business_logic;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,8 +17,8 @@ import com.example.tlg_bot_handlers.forecast_item_parsers.CurrentWeather;
 import com.example.weather_api.ForecastItem;
 import com.example.weather_api.GetCurrentWeatherOpenWeather;
 
-public class SendCurrentWeatherForSingleCity {
-    private static final Logger logger = Logger.getLogger(SendCurrentWeatherForSingleCity.class.getName());
+public class CurrentWeatherForSingleCity {
+    private static final Logger logger = Logger.getLogger(CurrentWeatherForSingleCity.class.getName());
 
     /**
      * Sends the current weather for a single city to a specified Telegram chat.
@@ -49,7 +49,7 @@ public class SendCurrentWeatherForSingleCity {
             // Send current weather to user.
             SendTlgMessage.send(telegramClient, chatId, msgText, keyboard);
         } catch (final JSONException e) {
-            logger.log(Level.SEVERE, e.getMessage());
+            logger.log(Level.SEVERE, e::toString);
             SendTlgMessage.sendDefaultError(telegramClient, language, chatId);
         } catch (final AppErrorCheckedException e2) {
             SendTlgMessage.sendDefaultError(telegramClient, language, chatId);
@@ -57,7 +57,7 @@ public class SendCurrentWeatherForSingleCity {
     }
     
 
-    private SendCurrentWeatherForSingleCity() {
+    private CurrentWeatherForSingleCity() {
         // Private constructor to hide the implicit public one
         throw new IllegalStateException("Utility class");
     }

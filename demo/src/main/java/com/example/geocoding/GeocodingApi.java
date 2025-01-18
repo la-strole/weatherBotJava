@@ -56,7 +56,7 @@ public abstract class GeocodingApi {
                 jsonObject.getDouble(fields.LON.toString());
                 jsonObject.getDouble(fields.LAT.toString());
             } catch (JSONException e) {
-                localLogger.log(Level.SEVERE, e.getMessage());
+                localLogger.log(Level.SEVERE, e::toString);
                 return false;
             }
         }

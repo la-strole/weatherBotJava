@@ -23,7 +23,7 @@ public class Main {
             LogManager.getLogManager()
                     .readConfiguration(Main.class.getResourceAsStream("/logging.properties"));
         } catch (final IOException e) {
-            logger.severe("Could not load logging configuration: " + e.getMessage());
+            logger.severe("Could not load logging configuration: " + e.toString());
         }
 
         final String botToken = Dotenv.load().get("TelegramBotToken");
