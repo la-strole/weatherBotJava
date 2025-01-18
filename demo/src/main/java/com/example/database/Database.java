@@ -281,7 +281,7 @@ public class Database {
      *                                  error occurs
      */
     public static JSONArray getSubscription(final long chatId) throws AppErrorCheckedException {
-        final String selectSQL = "SELECT cityName, lon, lat, time FROM subscribes WHERE chatId = ? AND time IS NOT NULL;";
+        final String selectSQL = "SELECT cityName, lon, lat, time FROM subscribes WHERE chatId = ? AND time IS NOT NULL";
         try (Connection conn = DriverManager.getConnection(DATABASE_URL);
                 PreparedStatement selectStmt = conn.prepareStatement(selectSQL)) {
             selectStmt.setLong(1, chatId);
@@ -291,12 +291,44 @@ public class Database {
                 final JSONObject obj = new JSONObject();
                 obj.put("cityName", rs.getString("cityName"));
                 obj.put("lon", rs.getDouble("lon"));
+                
                 obj.put("lat", rs.getDouble("lat"));
                 obj.put("time", rs.getString("time"));
                 result.put(obj);
             }
             return result;
         } catch (SQLException | JSONException e) {
+            logger.log(Level.SEVERE, e::toString);
+            throw new AppErrorCheckedException(RUNTIME_ERROR);
+        }
+    }
+
+    /**
+     * Cancels a subscription for a specific chat ID, longitude, and latitude.
+     *
+     * <p>
+     * This function deletes the subscription record from the 'subscribes' table
+     * in the database where the chat ID, longitude, and latitude match the
+     * provided parameters.
+     * </p>
+     *
+     * @param chatId the ID of the chat for which to cancel the subscription
+     * @param lon    the longitude of the city for which to cancel the
+     *               subscription
+     * @param lat    the latitude of the city for which to cancel the
+     *               subscription
+     * @throws AppErrorCheckedException if a database access error occurs
+     */
+    public static void cancelSubscription(long chatId, double lon, double lat, LocalTime time) throws AppErrorCheckedException{
+        final String updateSQL = "DELETE FROM subscribes WHERE chatId = ? AND lon = ? AND lat = ? AND time = ?";
+        try (Connection conn = DriverManager.getConnection(DATABASE_URL);
+            PreparedStatement updateStmt = conn.prepareStatement(updateSQL)){
+                updateStmt.setLong(1, chatId);
+                updateStmt.setDouble(2, lon);
+                updateStmt.setDouble(3, lat);
+                updateStmt.setString(4, time.toString());
+                updateStmt.executeUpdate();
+        } catch (SQLException  e){
             logger.log(Level.SEVERE, e::toString);
             throw new AppErrorCheckedException(RUNTIME_ERROR);
         }

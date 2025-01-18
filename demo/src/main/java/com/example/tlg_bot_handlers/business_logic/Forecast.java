@@ -82,7 +82,7 @@ public class Forecast {
             final List<InlineKeyboardButton> row = new ArrayList<>();
             row.add(button);
             keyboard.add(row);
-            SendTlgMessage.editMessagText(telegramClient, originalMessage.getMessageId(), chatId,
+            SendTlgMessage.editMessageWithKeyboard(telegramClient, originalMessage.getMessageId(), chatId,
                     text, keyboard);
         } catch (final AppErrorCheckedException | JSONException e) {
             logger.log(Level.SEVERE, "Can not complete collback Forecast.");
@@ -157,7 +157,7 @@ public class Forecast {
             }
             keyboard.add(row);
             // Edit the original message with the forecast index.
-            SendTlgMessage.editMessagText(telegramClient, originalMessageId, chatId,
+            SendTlgMessage.editMessageWithKeyboard(telegramClient, originalMessageId, chatId,
                     forecastText, keyboard);
 
         } catch (JSONException | UnsupportedOperationException | ClassCastException
