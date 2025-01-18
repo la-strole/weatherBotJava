@@ -7,10 +7,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.json.JSONArray;
+import org.json.JSONObject;
 import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
@@ -49,12 +51,12 @@ public class CommandHandler {
                 handleCommandShowSubscriptions();
                 break;
             }
-            
+
             case "/subscriptions_add": {
                 handleCommandSettingsAddCity();
                 break;
             }
-            
+
             case "/change_forecast_type": {
                 handleCommandChangeForecastType();
                 break;
@@ -116,15 +118,27 @@ public class CommandHandler {
             // If there are subscriptions.
             if (!subscriptions.isEmpty()) {
                 // StringBuilder cityList
-                msgText = DataValidation.getStringFromResourceBoundle(rb, "subscriptionsList")
-                        + "\n";
+                for (int i = 0; i < subscriptions.length(); i++) {
+
+                    JSONObject subscriptionRow = subscriptions.getJSONObject(i);
+                    String text = String.format("<b>%s %s</b>%nlon=%f%nlat=%f",
+                            subscriptionRow.getString("cityName"),
+                            subscriptionRow.getString("time"),
+                            subscriptionRow.getFloat("lon"), subscriptionRow.getFloat("lat"));
+                    String buttonText = DataValidation.getStringFromResourceBoundle(
+                            DataValidation.getMessages(language), "subscriptionsRemoveSunscriptionButtonText");
+                    InlineKeyboardButton button = InlineKeyboardButton.builder().callbackData("RS").text(buttonText)
+                            .build();
+                    List<List<InlineKeyboardButton>> keyboard = List.of(List.of(button));
+                    SendTlgMessage.send(telegramClient, chatId, text, keyboard);
+                }
                 // If the subscriptions list is empty.
             } else {
                 msgText = DataValidation.getStringFromResourceBoundle(rb,
                         "subscriptionsEmpty");
+                // Send message
+                SendTlgMessage.send(telegramClient, chatId, msgText);
             }
-            // Send message
-            SendTlgMessage.send(telegramClient, chatId, msgText);
         } catch (final AppErrorCheckedException e) {
             SendTlgMessage.sendDefaultError(telegramClient, language, chatId);
         }

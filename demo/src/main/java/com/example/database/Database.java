@@ -265,6 +265,21 @@ public class Database {
         }
     }
 
+    /**
+     * Retrieves the subscription details for a specific chat ID from the
+     * database.
+     *
+     * @param chatId the ID of the chat for which to retrieve subscription details
+     * @return a JSONArray containing the subscription details if found, otherwise
+     *         an empty JSONArray. Each object in the array represents a
+     *         subscription and contains the following fields:
+     *         - "cityName": the name of the city
+     *         - "lon": the longitude of the city
+     *         - "lat": the latitude of the city
+     *         - "time": the time of the subscription (if any)
+     * @throws AppErrorCheckedException if a database access error or JSON parsing
+     *                                  error occurs
+     */
     public static JSONArray getSubscription(final long chatId) throws AppErrorCheckedException {
         final String selectSQL = "SELECT cityName, lon, lat, time FROM subscribes WHERE chatId = ? AND time IS NOT NULL;";
         try (Connection conn = DriverManager.getConnection(DATABASE_URL);
@@ -281,7 +296,7 @@ public class Database {
                 result.put(obj);
             }
             return result;
-        } catch (final SQLException | JSONException e) {
+        } catch (SQLException | JSONException e) {
             logger.log(Level.SEVERE, e::toString);
             throw new AppErrorCheckedException(RUNTIME_ERROR);
         }
