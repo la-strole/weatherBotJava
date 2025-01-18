@@ -53,7 +53,7 @@ public class CommandHandler {
             }
 
             case "/subscriptions_add": {
-                handleCommandSettingsAddCity();
+                handleCommandSubscriptionAddCity();
                 break;
             }
 
@@ -146,7 +146,7 @@ public class CommandHandler {
 
     }
 
-    private void handleCommandSettingsAddCity() {
+    private void handleCommandSubscriptionAddCity() {
         // Send a message to the user to ask for their city name.
         String msgText = "AddCity:\n";
         try {

@@ -260,6 +260,8 @@ public class Database {
             updateStmt.setDouble(5, lat);
             updateStmt.executeUpdate();
         } catch (final SQLException e) {
+            logger.setLevel(Level.FINE);
+            logger.log(Level.FINE, String.format("lon=%f lat=%f time=%s", lon, lat, time));
             logger.log(Level.SEVERE, e::toString);
             throw new AppErrorCheckedException(RUNTIME_ERROR);
         }

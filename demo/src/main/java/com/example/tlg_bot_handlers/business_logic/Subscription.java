@@ -33,8 +33,7 @@ public class Subscription {
      * @param language       The language of the messages to be sent.
      */
     public static void handleCityName(final String cityName, final TelegramClient telegramClient, final long chatId,
-            final int msgId,
-            final String language) {
+            final int msgId, final String language) {
         try {
             // Get coordinates for the city from geocoding service.
             final GeocodingApiOpenWeather gApi = new GeocodingApiOpenWeather(language);
