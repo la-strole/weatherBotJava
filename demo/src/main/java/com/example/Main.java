@@ -40,6 +40,7 @@ public class Main {
             logger.log(Level.SEVERE, e::toString);
         } catch (final Exception e) {
             logger.log(Level.SEVERE, e::toString);
+            System.exit(-1);
         }
     }
 }
