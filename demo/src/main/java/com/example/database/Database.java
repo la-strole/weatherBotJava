@@ -68,7 +68,7 @@ public class Database {
             createTable2Stmt.executeUpdate();
             createTable3Stmt.executeUpdate();
             createTable4Stmt.executeUpdate();
-            logger.log(Level.INFO, "Tables created successfully");
+            logger.log(Level.INFO, "Tables created successfully or they were existing");
         } catch (final SQLException e) {
             logger.log(Level.SEVERE, e::toString);
             throw new AppErrorException("Can not create table.");
@@ -226,6 +226,13 @@ public class Database {
             throws AppErrorCheckedException {
 
         final String insertSQL = "INSERT INTO subscribes (chatId, cityName, lon, lat, created_at) VALUES (?, ?, ?, ?, ?)";
+        // Clear garbage.
+        try { 
+            deleteNullTimeRows(chatId, lon, lat);
+        } catch (AppErrorCheckedException e) {
+            throw new AppErrorCheckedException(RUNTIME_ERROR);
+        }
+        // Add the new record.
         try (Connection conn = DriverManager.getConnection(DATABASE_URL);
                 PreparedStatement insertStmt = conn.prepareStatement(insertSQL)) {
             if (!DataValidation.isCityNameValid(cityName) || !DataValidation.isLongitudeValid(lon)
@@ -247,10 +254,25 @@ public class Database {
 
     }
 
+    private static void deleteNullTimeRows(final long chatId, final double lon, final double lat)
+            throws AppErrorCheckedException {
+        final String deleteSQL = "DELETE FROM subscribes WHERE chatID = ? AND lon = ? AND lat = ? AND time is NULL";
+        try (Connection conn = DriverManager.getConnection(DATABASE_URL);
+                PreparedStatement deleteStmt = conn.prepareStatement(deleteSQL)) {
+            deleteStmt.setLong(1, chatId);
+            deleteStmt.setDouble(2, lon);
+            deleteStmt.setDouble(3, lat);
+            deleteStmt.executeUpdate();
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, e::toString);
+            throw new AppErrorCheckedException(RUNTIME_ERROR);
+        }
+    }
+
     public static void addSubscriptionTime(final long chatId, final double lon, final double lat, final LocalTime time)
             throws AppErrorCheckedException {
 
-        final String insertSQL = "UPDATE subscribes SET time = ?, created_at = ? WHERE chatID = ? AND lon = ? AND lat = ?";
+        final String insertSQL = "UPDATE subscribes SET time = ?, created_at = ? WHERE chatID = ? AND lon = ? AND lat = ? AND time is NULL";
         try (Connection conn = DriverManager.getConnection(DATABASE_URL);
                 PreparedStatement updateStmt = conn.prepareStatement(insertSQL)) {
             updateStmt.setString(1, time.toString());
