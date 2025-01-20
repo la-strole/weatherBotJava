@@ -4,11 +4,12 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.logging.Logger;
 import java.time.Instant;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * The ScheduledDeletion class provides functionality to schedule a task that
@@ -38,9 +39,15 @@ import java.util.concurrent.TimeUnit;
  */
 public class ScheduledDeletion {
 
+    // Private constructor to hide the implicit public one
+    private ScheduledDeletion() {
+        throw new IllegalStateException("This is a utility class and cannot be instantiated");
+    }
+
     private static final String DB_URL = Database.DATABASE_URL; // Update with your database path
     private static final String DELETE_OLD_ROWS_QUERY1 = "DELETE FROM multipleCities WHERE created_at < ?";
     private static final String DELETE_OLD_ROWS_QUERY2 = "DELETE FROM forecasts WHERE created_at < ?";
+    private static final String DELETE_NULL_TIME_ROWS = "DELETE FROM subscribes WHERE time is NULL";
 
     private static final Logger logger = Logger.getLogger(ScheduledDeletion.class.getName());
 
@@ -57,16 +64,22 @@ public class ScheduledDeletion {
                     PreparedStatement preparedStatement = connection
                             .prepareStatement(DELETE_OLD_ROWS_QUERY1);
                     PreparedStatement preparedStatement2 = connection
-                            .prepareStatement(DELETE_OLD_ROWS_QUERY2)) {
+                            .prepareStatement(DELETE_OLD_ROWS_QUERY2);
+                    PreparedStatement preparedStatement3 = connection
+                            .prepareStatement(DELETE_NULL_TIME_ROWS)) {
                 preparedStatement.setString(1,
                         Instant.now().minusSeconds(intervalInMinutes * 60).toString());
                 preparedStatement2.setString(1,
                         Instant.now().minusSeconds(intervalInMinutes * 60).toString());
                 int rowsDeletedT1 = preparedStatement.executeUpdate();
                 int rowsDeletedT2 = preparedStatement2.executeUpdate();
+                int rowsDeletedT3 = preparedStatement3.executeUpdate();
 
-                logger.info(String.format("%d old rows deleted from t1, %d old rows deleted from t2",
-                        rowsDeletedT1, rowsDeletedT2));
+                logger.log(Level.INFO, () -> String.format(
+                        "%d old rows deleted from multipleCities, " +
+                        "%d old rows deleted from forecasts, " + 
+                        "%d old rows deleted from subscribes",
+                        rowsDeletedT1, rowsDeletedT2, rowsDeletedT3));
             } catch (SQLException e) {
                 logger.severe(e.toString());
             }
