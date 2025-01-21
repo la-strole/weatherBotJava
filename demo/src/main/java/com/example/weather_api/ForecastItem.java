@@ -15,6 +15,35 @@ import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.Setter;
 
+/**
+ * Represents a weather forecast item with various weather-related attributes.
+ * Provides methods to serialize and deserialize the object to and from a JSONObject.
+ * 
+ * <p>This class includes attributes such as date and time of the forecast, city timezone,
+ * sunrise and sunset times, temperature, pressure, humidity, weather description, cloudiness,
+ * wind speed and direction, visibility, probability of precipitation, rain and snow volumes,
+ * city name, latitude, longitude, and country.</p>
+ * 
+ * <p>Serialization and deserialization methods handle the conversion of these attributes
+ * to and from a JSONObject, and may throw an AppErrorCheckedException if an error occurs
+ * during the process.</p>
+ * 
+ * <p>Example usage:</p>
+ * <pre>
+ * {@code
+ * ForecastItem forecastItem = new ForecastItem();
+ * // Set attributes...
+ * JSONObject jsonObject = ForecastItem.serializeToJsonObject(forecastItem);
+ * ForecastItem deserializedItem = ForecastItem.deserializeFromJonObject(jsonObject);
+ * }
+ * </pre>
+ * 
+ * <p>Note: The class uses Lombok annotations for generating boilerplate code such as
+ * getters, setters, and a no-argument constructor.</p>
+ * 
+ * @see JSONObject
+ * @see AppErrorCheckedException
+ */
 @NoArgsConstructor
 @Getter
 @Setter

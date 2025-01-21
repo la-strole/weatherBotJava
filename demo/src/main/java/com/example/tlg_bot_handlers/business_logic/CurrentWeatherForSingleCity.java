@@ -17,6 +17,31 @@ import com.example.tlg_bot_handlers.forecast_item_parsers.CurrentWeather;
 import com.example.weather_api.ForecastItem;
 import com.example.weather_api.GetCurrentWeatherOpenWeather;
 
+/**
+ * The CurrentWeatherForSingleCity class provides functionality to send the current weather
+ * information for a single city to a specified Telegram chat. It uses the OpenWeather API
+ * to fetch the weather data and formats it into a message that can be sent via a Telegram client.
+ * 
+ * <p>This class includes a method to send the weather information along with an inline keyboard
+ * button for further interaction. It handles exceptions that may occur during the process and
+ * sends a default error message if needed.</p>
+ * 
+ * <p>Note: This class is designed as a utility class and should not be instantiated.</p>
+ * 
+ * <p>Usage example:</p>
+ * <pre>
+ * {@code
+ * CurrentWeatherForSingleCity.sendMessage(lon, lat, telegramClient, language, chatId);
+ * }
+ * </pre>
+ * 
+ * @see GetCurrentWeatherOpenWeather
+ * @see ForecastItem
+ * @see SendTlgMessage
+ * @see InlineKeyboardButton
+ * @see CallbackHandler
+ * @see DataValidation
+ */
 public class CurrentWeatherForSingleCity {
     private static final Logger logger = Logger.getLogger(CurrentWeatherForSingleCity.class.getName());
 

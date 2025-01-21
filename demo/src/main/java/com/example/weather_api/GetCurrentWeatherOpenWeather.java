@@ -16,11 +16,59 @@ import com.example.web_json_handlers.JsonHandler;
 
 import io.github.cdimascio.dotenv.Dotenv;
 
+/**
+ * The GetCurrentWeatherOpenWeather class extends the GetCurrentWeather class
+ * and provides functionality to fetch and parse current weather data from the
+ * OpenWeather API.
+ * 
+ * <p>This class uses the OpenWeather API to retrieve current weather data for a
+ * given set of coordinates (longitude and latitude). The data is then parsed
+ * into a ForecastItem object.</p>
+ * 
+ * <p>It includes methods to validate the input coordinates, make the API call,
+ * and parse the JSON response into a ForecastItem object.</p>
+ * 
+ * <p>Usage example:</p>
+ * <pre>{@code
+ * GetCurrentWeatherOpenWeather weather = new GetCurrentWeatherOpenWeather("en");
+ * ForecastItem forecast = weather.getCurrentWeather(12.34, 56.78);
+ * }</pre>
+ * 
+ * <p>Dependencies:</p>
+ * <ul>
+ *   <li>org.json.JSONObject</li>
+ *   <li>org.json.JSONArray</li>
+ *   <li>io.github.cdimascio.dotenv.Dotenv</li>
+ *   <li>java.util.logging.Logger</li>
+ *   <li>java.util.logging.Level</li>
+ *   <li>java.util.Map</li>
+ *   <li>java.util.HashMap</li>
+ *   <li>java.util.Optional</li>
+ * </ul>
+ * 
+ * <p>Environment Variables:</p>
+ * <ul>
+ *   <li>OpenWeatherToken: The API key for accessing the OpenWeather API.</li>
+ * </ul>
+ * 
+ * <p>Exceptions:</p>
+ * <ul>
+ *   <li>AppErrorCheckedException: Thrown if an error occurs during the API call
+ *       or JSON parsing.</li>
+ * </ul>
+ * 
+ * @see GetCurrentWeather
+ * @see ForecastItem
+ * @see AppErrorCheckedException
+ */
 public class GetCurrentWeatherOpenWeather extends GetCurrentWeather {
     private static final Logger logger = Logger.getLogger(GetCurrentWeatherOpenWeather.class.getName());
     private static final String RUNTIME_ERROR = "Runtime error.";
     private static final String CURRENT_WEATHER_API_URL = "https://api.openweathermap.org/data/2.5/weather";
 
+    static final Dotenv dotenv = Dotenv.load();
+
+    static final String API_KEY = dotenv.get("OpenWeatherToken");
     /**
      * Parses the JSON object representing the current weather and populates a
      * ForecastItem object with the parsed data.
@@ -30,62 +78,59 @@ public class GetCurrentWeatherOpenWeather extends GetCurrentWeather {
      * @throws AppErrorCheckedException If an error occurs during the parsing
      *                                  process.
      */
-    private static ForecastItem currentWeatherParser(JSONObject currentWeather) throws AppErrorCheckedException {
+    private static ForecastItem currentWeatherParser(final JSONObject currentWeather) throws AppErrorCheckedException {
         try {
-            ForecastItem item = new ForecastItem();
-            long tz = currentWeather.getLong("timezone");
+            final ForecastItem item = new ForecastItem();
+            final long tz = currentWeather.getLong("timezone");
             item.setCityTimezone(tz);
-            long unixDt = currentWeather.getLong("dt");
+            final long unixDt = currentWeather.getLong("dt");
             item.setDt(TimeUtils.unixToLocalDateTimeConverter(unixDt, tz));
-            JSONObject sys = currentWeather.getJSONObject("sys");
-            long sr = sys.getLong("sunrise");
+            final JSONObject sys = currentWeather.getJSONObject("sys");
+            final long sr = sys.getLong("sunrise");
             item.setSunrise(TimeUtils.unixToLocalDateTimeConverter(sr, tz));
-            long ss = sys.getLong("sunset");
+            final long ss = sys.getLong("sunset");
             item.setSunset(TimeUtils.unixToLocalDateTimeConverter(ss, tz));
-            JSONObject main = currentWeather.getJSONObject("main");
+            final JSONObject main = currentWeather.getJSONObject("main");
             item.setTemp(Math.round(main.getFloat("temp")));
             item.setFeelsLike(Math.round(main.getFloat("feels_like")));
             item.setPressure(main.optString("grnd_level", ""));
             item.setHumidity(main.optString("humidity", ""));
             item.setDescription(currentWeather.getJSONArray("weather")
                 .getJSONObject(0).getString("description"));
-            JSONObject cloudsObj = currentWeather.optJSONObject("clouds");
+            final JSONObject cloudsObj = currentWeather.optJSONObject("clouds");
             if (cloudsObj != null) {
                 item.setClouds(cloudsObj.optString("all", ""));
             }
-            JSONObject windObject = currentWeather.optJSONObject("wind");
+            final JSONObject windObject = currentWeather.optJSONObject("wind");
             if (windObject != null) {
                 item.setWindSpeed(windObject.optString("speed", ""));
                 item.setWindDeg(windObject.optString("deg", ""));
                 item.setWindGust(windObject.optString("gust", ""));
             }
             item.setVisibility(currentWeather.optString("visibility", ""));
-            JSONObject rain = currentWeather.optJSONObject("rain");
+            final JSONObject rain = currentWeather.optJSONObject("rain");
             if (rain != null) {
                 item.setRainh(rain.optString("1h", ""));
             }
-            JSONObject snow = currentWeather.optJSONObject("snow");
+            final JSONObject snow = currentWeather.optJSONObject("snow");
             if (snow != null) {
                 item.setSnowh(snow.optString("1h", ""));
             }
             item.setCityName(currentWeather.getString("name"));
-            JSONObject coord = currentWeather.getJSONObject("coord");
+            final JSONObject coord = currentWeather.getJSONObject("coord");
             item.setLon(coord.getDouble("lon"));
             item.setLat(coord.getDouble("lat"));
             item.setCityCountry(sys.getString("country"));
             return item;
-        } catch (JSONException e) {
+        } catch (final JSONException e) {
             logger.log(Level.SEVERE, e::toString);
             throw new AppErrorCheckedException(RUNTIME_ERROR);
         }
     }
 
-    static final Dotenv dotenv = Dotenv.load();
-    static final String API_KEY = dotenv.get("OpenWeatherToken");
-
     String language;
 
-    public GetCurrentWeatherOpenWeather(String language) {
+    public GetCurrentWeatherOpenWeather(final String language) {
         this.language = language;
     }
 
@@ -110,7 +155,7 @@ public class GetCurrentWeatherOpenWeather extends GetCurrentWeather {
                 logger.log(Level.SEVERE, "Empty response from current weather API.");
                 throw new AppErrorCheckedException(RUNTIME_ERROR);
             }
-            JSONObject responseJson = result.getJSONObject(0);
+            final JSONObject responseJson = result.getJSONObject(0);
             return currentWeatherParser(responseJson);
 
         } catch (JSONException | UnsupportedOperationException | ClassCastException

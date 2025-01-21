@@ -19,14 +19,14 @@ public abstract class GetForecastWeather {
     Logger localLogger = Logger.getLogger(GetForecastWeather.class.getName());
     abstract JSONArray getForecastWeather(double lon, double lat) throws AppErrorCheckedException;
 
-    boolean isJsonArrayValid(JSONArray jsonArray) {
+    boolean isJsonArrayValid(final JSONArray jsonArray) {
         for (int i = 0; i < jsonArray.length(); i++) {
             try {
-                JSONObject jsonObject = jsonArray.getJSONObject(i);
+                final JSONObject jsonObject = jsonArray.getJSONObject(i);
                 LocalDateTime.parse(jsonObject.getString("date"));
-                JSONArray forecastsArray = jsonObject.getJSONArray("forecasts");
+                final JSONArray forecastsArray = jsonObject.getJSONArray("forecasts");
                 for (int j = 0; j < forecastsArray.length(); j++) {
-                    JSONObject forecast = forecastsArray.getJSONObject(j);
+                    final JSONObject forecast = forecastsArray.getJSONObject(j);
                     ForecastItem.deserializeFromJonObject(forecast);
                 }
             } catch (JSONException | AppErrorCheckedException e) {

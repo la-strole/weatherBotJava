@@ -92,7 +92,7 @@ public class DataValidation {
     }
 
     public static boolean isCityNameValid(final String cityName) {
-        boolean result = cityName.matches("^[\\p{L}[\\s'-]]+$") && cityName.length() <= 25;
+        final boolean result = cityName.matches("^[\\p{L}[\\s'-]]+$") && cityName.length() <= 25;
         if (!result){
             logger.log(Level.SEVERE, () -> String.format("Invalid city name: %s", cityName));
         }
@@ -100,7 +100,7 @@ public class DataValidation {
     }
 
     public static boolean isLongitudeValid(final Double lon) {
-        boolean result = (lon >= -180 && lon <= 180);
+        final boolean result = (lon >= -180 && lon <= 180);
         if (!result){
             logger.log(Level.SEVERE, () -> String.format("Invalid lon: %f", lon));
         }
@@ -108,7 +108,7 @@ public class DataValidation {
     }
 
     public static boolean isLatitudeValid(final Double lat) {
-        boolean result =  (lat >= -90 && lat <= 90);
+        final boolean result =  (lat >= -90 && lat <= 90);
         if (!result){
             logger.log(Level.SEVERE, () -> String.format("Invalid lat: %f", lat));
         }

@@ -19,6 +19,64 @@ import com.example.geocoding.GeocodingApi;
 import com.example.tlg_bot_handlers.CallbackHandler;
 import com.example.tlg_bot_handlers.SendTlgMessage;
 
+/**
+ * The MultipleCitiesChoise class provides methods to handle the selection of multiple cities
+ * from a list obtained via a geocoding API. It allows sending a message with inline keyboard
+ * buttons for city selection and processes the callback data from the selected city.
+ * 
+ * <p>Methods included:
+ * <ul>
+ *   <li>{@link #sendMessageToChooseCity(boolean, JSONArray, TelegramClient, long, int, String)}:
+ *       Sends a message to the specified chat with a list of cities as inline keyboard buttons.
+ *   <li>{@link #callbackMultipleCitiesChoise(String, Message, TelegramClient, long, String)}:
+ *       Processes the callback data from the inline keyboard button and retrieves the selected city's coordinates.
+ * </ul>
+ * 
+ * <p>Usage example:
+ * <pre>
+ * {@code
+ * JSONArray geocodingApiResponse = ...;
+ * TelegramClient telegramClient = ...;
+ * long chatId = ...;
+ * int msgId = ...;
+ * String language = ...;
+ * 
+ * MultipleCitiesChoise.sendMessageToChooseCity(false, geocodingApiResponse, telegramClient, chatId, msgId, language);
+ * }
+ * </pre>
+ * 
+ * <p>Note: This class is not meant to be instantiated.
+ * 
+ * <p>Dependencies:
+ * <ul>
+ *   <li>org.json.JSONArray
+ *   <li>org.json.JSONObject
+ *   <li>java.util.logging.Logger
+ *   <li>java.util.List
+ *   <li>java.util.ArrayList
+ *   <li>com.example.tlg_bot_handlers.business_logic.TelegramClient
+ *   <li>com.example.tlg_bot_handlers.business_logic.SendTlgMessage
+ *   <li>com.example.tlg_bot_handlers.business_logic.Database
+ *   <li>com.example.tlg_bot_handlers.business_logic.CallbackHandler
+ *   <li>com.example.tlg_bot_handlers.business_logic.GeocodingApi
+ *   <li>com.example.tlg_bot_handlers.business_logic.DataValidation
+ *   <li>com.example.tlg_bot_handlers.business_logic.AppErrorCheckedException
+ * </ul>
+ * 
+ * <p>Exceptions:
+ * <ul>
+ *   <li>org.json.JSONException
+ *   <li>java.lang.NumberFormatException
+ *   <li>java.lang.IndexOutOfBoundsException
+ *   <li>com.example.tlg_bot_handlers.business_logic.AppErrorCheckedException
+ * </ul>
+ * 
+ * <p>Logging:
+ * <ul>
+ *   <li>java.util.logging.Level.SEVERE
+ * </ul>
+ * 
+ */
 public class MultipleCitiesChoise {
     private static final Logger logger = Logger.getLogger(MultipleCitiesChoise.class.getName());
 
@@ -38,7 +96,7 @@ public class MultipleCitiesChoise {
      *                             chosen city with the original message).
      * @param language             The language of the message.
      */
-    public static void sendMessageToChooseCity(boolean isItSubscription, final JSONArray geocodingApiResponse,
+    public static void sendMessageToChooseCity(final boolean isItSubscription, final JSONArray geocodingApiResponse,
             final TelegramClient telegramClient,
             final long chatId, final int msgId, final String language) {
         // Add inline keyboard buttons.
@@ -50,7 +108,7 @@ public class MultipleCitiesChoise {
                         city.getString(GeocodingApi.fields.CITY_NAME.toString()),
                         city.getString(GeocodingApi.fields.COUNTRY.toString()),
                         city.optString(GeocodingApi.fields.STATE.toString(), ""));
-                String callBackValue = isItSubscription ? CallbackHandler.CallbackValues.CS.name()
+                final String callBackValue = isItSubscription ? CallbackHandler.CallbackValues.CS.name()
                         : CallbackHandler.CallbackValues.C.name();
                 final InlineKeyboardButton button = InlineKeyboardButton.builder().text(buttonText)
                         .callbackData(String.format("%s:%d", callBackValue, i))

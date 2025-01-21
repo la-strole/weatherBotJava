@@ -22,9 +22,9 @@ import io.github.cdimascio.dotenv.Dotenv;
 public class GeocodingApiOpenWeather extends GeocodingApi {
     private static final String GEOCODING_API_URL = "http://api.openweathermap.org/geo/1.0/direct";
     private static final String RUNTIME_ERROR = "Runtime Error.";
+    private static final Logger logger = Logger.getLogger(GeocodingApiOpenWeather.class.getName());
     final Dotenv dotenv = Dotenv.load();
     final String apiKey = dotenv.get("OpenWeatherToken");
-    private static final Logger logger = Logger.getLogger(GeocodingApiOpenWeather.class.getName());
 
     String language;
 
@@ -60,11 +60,11 @@ public class GeocodingApiOpenWeather extends GeocodingApi {
                         RUNTIME_ERROR);
             }
             // Parse the result.
-            JSONArray coordinates = new JSONArray();
+            final JSONArray coordinates = new JSONArray();
             for (int i = 0; i < result.length(); i++) {
-                JSONObject responseJsonObject = result.getJSONObject(i);
-                JSONObject cityJsonObject = new JSONObject();
-                JSONObject localCityNameObject = responseJsonObject.optJSONObject("local_names");
+                final JSONObject responseJsonObject = result.getJSONObject(i);
+                final JSONObject cityJsonObject = new JSONObject();
+                final JSONObject localCityNameObject = responseJsonObject.optJSONObject("local_names");
                 String localCityName = "";
                 if (localCityNameObject != null) {
                     localCityName = localCityNameObject.optString(language, "");

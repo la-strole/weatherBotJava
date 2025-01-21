@@ -16,6 +16,60 @@ import com.example.web_json_handlers.JsonHandler;
 
 import io.github.cdimascio.dotenv.Dotenv;
 
+/**
+ * The OpenWeatherApi class provides methods to retrieve current air pollution data
+ * and air pollution forecast data from the OpenWeatherMap API.
+ * 
+ * <p>
+ * This class contains two main methods:
+ * <ul>
+ * <li>{@link #getCurrentAirPollution(Double, Double)}: Retrieves the current air pollution data for a specified location.</li>
+ * <li>{@link #getForcastAirPollution(Double, Double)}: Retrieves the air pollution forecast for a specified location.</li>
+ * </ul>
+ * </p>
+ * 
+ * <p>
+ * Both methods require valid longitude and latitude values and will throw an
+ * {@link AppErrorCheckedException} if the input is invalid or if there is an error during the API call.
+ * </p>
+ * 
+ * <p>
+ * This class is not meant to be instantiated and contains a private constructor to prevent instantiation.
+ * </p>
+ * 
+ * <p>
+ * Constants:
+ * <ul>
+ * <li>{@code CURRENT_AIR_POLLUTION_API_URL}: The URL for the current air pollution API endpoint.</li>
+ * <li>{@code FORCAST_AIR_POLLUTION_API_URL}: The URL for the air pollution forecast API endpoint.</li>
+ * <li>{@code RUNTIME_ERROR}: The error message for runtime errors.</li>
+ * <li>{@code TOKEN_NAME}: The name of the environment variable that stores the OpenWeatherMap API token.</li>
+ * <li>{@code EMPTY_RESULT_ERROR}: The error message for empty results from the API.</li>
+ * </ul>
+ * </p>
+ * 
+ * <p>
+ * Dependencies:
+ * <ul>
+ * <li>{@link Dotenv}: Used to load environment variables.</li>
+ * <li>{@link JsonHandler}: Used to handle JSON data from the API.</li>
+ * <li>{@link DataValidation}: Used to validate longitude and latitude values.</li>
+ * <li>{@link AppErrorCheckedException}: Custom exception thrown for application errors.</li>
+ * </ul>
+ * </p>
+ * 
+ * <p>
+ * Logging:
+ * <ul>
+ * <li>{@code logger}: Used to log error messages and other information.</li>
+ * </ul>
+ * </p>
+ * 
+ * @see Dotenv
+ * @see JsonHandler
+ * @see DataValidation
+ * @see AppErrorCheckedException
+ */
 public class OpenWeatherApi {
     private static final String CURRENT_AIR_POLLUTION_API_URL = "http://api.openweathermap.org/data/2.5/air_pollution";
     private static final String FORCAST_AIR_POLLUTION_API_URL = "http://api.openweathermap.org/data/2.5/air_pollution/forecast";

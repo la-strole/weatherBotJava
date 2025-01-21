@@ -35,11 +35,16 @@ public class ForecastShort {
         // Get the timestamp and timezone
         try {
             result.append(
-                    String.format("<b>%s:</b>%n", forecastItem.getDt().format(DateTimeFormatter.ofPattern("HH:mm"))));
+                    String.format("<b>%s:</b>%n", forecastItem.getDt()
+                            .format(DateTimeFormatter.ofPattern("HH:mm"))));
             result.append(String.format("\t<b>%s:</b> %s%n",
-                    DataValidation.getStringFromResourceBoundle(rb, "description"), forecastItem.getDescription()));
+                    DataValidation.getStringFromResourceBoundle(
+                            rb, "description"),
+                    forecastItem.getDescription()));
             result.append(String.format("\t<b>%s:</b> %s°C%n",
-                    DataValidation.getStringFromResourceBoundle(rb, "temperature"), forecastItem.getTemp()));
+                    DataValidation.getStringFromResourceBoundle(
+                            rb, "temperature"),
+                    forecastItem.getTemp()));
             optionalAppend(result, forecastItem.getWindSpeed(), "windSpeed", "ms", true, rb);
             optionalAppend(result, forecastItem.getRainh(), "rain", "mm3H", true, rb);
             optionalAppend(result, forecastItem.getSnowh(), "snow", "mm3H", true, rb);
@@ -49,6 +54,30 @@ public class ForecastShort {
             logger.log(Level.SEVERE, e.getMessage());
             throw new AppErrorCheckedException(RUNTIME_ERROR);
         }
+    }
+
+    /**
+     * Generates a formatted forecast string for a specific day from a JSONArray of forecast data.
+     *
+     * @param forecasts the JSONArray containing forecast data
+     * @param language the language code to format the date and other locale-specific information
+     * @return a formatted string containing the forecast information
+     * @throws AppErrorCheckedException if there is an error during the deserialization of forecast data
+     */
+    public static String getForecastStringToSpecificDay(final JSONArray forecasts, final String language)
+            throws AppErrorCheckedException {
+        final StringBuilder text = new StringBuilder();
+        for (int i = 0; i < forecasts.length(); i += 2) {
+            final ForecastItem forecastItem = ForecastItem.deserializeFromJonObject(forecasts.getJSONObject(i));
+            if (i == 0) {
+                text.append(String.format("<b>%s:\t%s</b>%n",
+                        forecastItem.getCityName(),
+                        forecastItem.getDt().format(DateTimeFormatter.ofPattern("dd.MM.yyyy",
+                                Locale.forLanguageTag(language)))));
+            }
+            text.append(parser(forecastItem, language));
+        }
+        return text.toString();
     }
 
     /**
@@ -84,21 +113,5 @@ public class ForecastShort {
     private ForecastShort() {
         // Private constructor to hide the implicit public one
         throw new IllegalStateException("Utility class");
-    }
-
-    public static String getForecastStringToSpecificDay(JSONArray forecasts, String language)
-            throws AppErrorCheckedException {
-        StringBuilder text = new StringBuilder();
-        for (int i = 0; i < forecasts.length(); i += 2) {
-            ForecastItem forecastItem = ForecastItem.deserializeFromJonObject(forecasts.getJSONObject(i));
-            if (i == 0) {
-                text.append(String.format("<b>%s:\t%s</b>%n",
-                        forecastItem.getCityName(),
-                        forecastItem.getDt().format(DateTimeFormatter.ofPattern("dd.MM.yyyy",
-                                Locale.forLanguageTag(language)))));
-            }
-            text.append(parser(forecastItem, language));
-        }
-        return text.toString();
     }
 }

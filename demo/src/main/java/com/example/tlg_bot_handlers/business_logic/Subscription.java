@@ -14,6 +14,19 @@ import com.example.exceptions.AppErrorCheckedException;
 import com.example.geocoding.GeocodingApiOpenWeather;
 import com.example.tlg_bot_handlers.SendTlgMessage;
 
+/**
+ * The Subscription class provides methods to handle the subscription process for weather updates.
+ * It includes methods to handle city name input, callback responses for city selection, and time input for weather updates.
+ * The class interacts with a geocoding service to retrieve city coordinates and a database to store subscription details.
+ * It also sends messages to users via a Telegram client.
+ * 
+ * Methods:
+ * - handleCityName: Handles the subscription of a city for weather updates.
+ * - callBackHandler: Handles the callback response from the user's city selection.
+ * - handleTime: Handles the subscription of a specific time for weather updates for a given city.
+ * 
+ * Note: This class is not meant to be instantiated.
+ */
 public class Subscription {
     private static final Logger logger = Logger.getLogger(Subscription.class.getName());
     private static final String ADD_TIME_HEADER = "AddTime:%nlon:%f%nlat:%f%n";

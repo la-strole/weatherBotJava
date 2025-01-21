@@ -270,15 +270,15 @@ public class Database {
      * @param language the language preference for the subscription
      * @throws AppErrorCheckedException if there is an error during the operation
      */
-    public static void addSubscriptionCity(final long chatId, final Double lon, final Double lat, String cityName,
-            String language) throws AppErrorCheckedException {
+    public static void addSubscriptionCity(final long chatId, final Double lon, final Double lat, final String cityName,
+            final String language) throws AppErrorCheckedException {
 
         final String insertSQL = "INSERT INTO subscribes " +
                 "(chatId, cityName, lon, lat, language, created_at) VALUES (?, ?, ?, ?, ?, ?)";
         // Clear garbage.
         try {
             deleteNullTimeRows(chatId, lon, lat);
-        } catch (AppErrorCheckedException e) {
+        } catch (final AppErrorCheckedException e) {
             throw new AppErrorCheckedException(RUNTIME_ERROR);
         }
         // Add the new record.
@@ -390,7 +390,7 @@ public class Database {
      *               subscription
      * @throws AppErrorCheckedException if a database access error occurs
      */
-    public static void cancelSubscription(long chatId, double lon, double lat, LocalTime time)
+    public static void cancelSubscription(final long chatId, final double lon, final double lat, final LocalTime time)
             throws AppErrorCheckedException {
         final String updateSQL = "DELETE FROM subscribes WHERE chatId = ? AND lon = ? AND lat = ? AND time = ?";
         try (Connection conn = DriverManager.getConnection(DATABASE_URL);
@@ -400,7 +400,7 @@ public class Database {
             updateStmt.setDouble(3, lat);
             updateStmt.setString(4, time.toString());
             updateStmt.executeUpdate();
-        } catch (SQLException e) {
+        } catch (final SQLException e) {
             logger.log(Level.SEVERE, e::toString);
             throw new AppErrorCheckedException(RUNTIME_ERROR);
         }
@@ -487,17 +487,17 @@ public class Database {
      */
     public static JSONArray getSubscriptionSheduled() throws AppErrorCheckedException {
         final String selectStmt = "SELECT chatId, lon, lat, language FROM subscribes WHERE time = ?";
-        String currentTime = Instant.now()
+        final String currentTime = Instant.now()
                 .atZone(ZoneId.of("UTC"))
                 .format(DateTimeFormatter.ofPattern("HH:mm"));
         try (Connection connection = DriverManager.getConnection(DATABASE_URL);
                 PreparedStatement preparedStatement = connection
                         .prepareStatement(selectStmt)) {
             preparedStatement.setString(1, currentTime);
-            ResultSet rs = preparedStatement.executeQuery();
-            JSONArray result = new JSONArray();
+            final ResultSet rs = preparedStatement.executeQuery();
+            final JSONArray result = new JSONArray();
             while (rs.next()) {
-                JSONObject object = new JSONObject();
+                final JSONObject object = new JSONObject();
                 object.put("chatId", rs.getLong("chatId"));
                 object.put("lon", rs.getDouble("lon"));
                 object.put("lat", rs.getDouble("lat"));
@@ -530,7 +530,7 @@ public class Database {
             deleteStmt.setDouble(2, lon);
             deleteStmt.setDouble(3, lat);
             deleteStmt.executeUpdate();
-        } catch (SQLException e) {
+        } catch (final SQLException e) {
             logger.log(Level.SEVERE, e::toString);
             throw new AppErrorCheckedException(RUNTIME_ERROR);
         }

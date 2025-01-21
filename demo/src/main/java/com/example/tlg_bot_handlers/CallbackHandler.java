@@ -1,9 +1,9 @@
 package com.example.tlg_bot_handlers;
 
 import java.time.LocalTime;
+import java.time.format.DateTimeParseException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.time.format.DateTimeParseException;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -14,10 +14,9 @@ import org.telegram.telegrambots.meta.generics.TelegramClient;
 import com.example.DataValidation;
 import com.example.database.Database;
 import com.example.exceptions.AppErrorCheckedException;
-import com.example.exceptions.AppErrorException;
+import com.example.tlg_bot_handlers.business_logic.CurrentWeatherForSingleCity;
 import com.example.tlg_bot_handlers.business_logic.Forecast;
 import com.example.tlg_bot_handlers.business_logic.MultipleCitiesChoise;
-import com.example.tlg_bot_handlers.business_logic.CurrentWeatherForSingleCity;
 import com.example.tlg_bot_handlers.business_logic.Subscription;
 
 public class CallbackHandler {

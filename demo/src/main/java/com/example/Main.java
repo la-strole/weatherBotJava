@@ -9,8 +9,8 @@ import org.telegram.telegrambots.longpolling.TelegramBotsLongPollingApplication;
 
 import com.example.database.Database;
 import com.example.database.ScheduledDeletion;
-import com.example.tlg_bot_handlers.TlgBot;
 import com.example.tlg_bot_handlers.SendScheduledMessage;
+import com.example.tlg_bot_handlers.TlgBot;
 
 import io.github.cdimascio.dotenv.Dotenv;
 
@@ -30,7 +30,7 @@ public class Main {
         final String botToken = Dotenv.load().get("TelegramBotToken");
         try (TelegramBotsLongPollingApplication botsApplication =
                 new TelegramBotsLongPollingApplication()) {
-            TlgBot bot = new TlgBot(botToken);
+            final TlgBot bot = new TlgBot(botToken);
             botsApplication.registerBot(botToken, bot);
             Database.createTable();
             logger.log(Level.INFO, () -> "TlgBot successfully started!");

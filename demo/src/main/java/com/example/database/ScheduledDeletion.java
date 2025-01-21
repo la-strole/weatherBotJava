@@ -51,10 +51,10 @@ public class ScheduledDeletion {
      *
      * @param intervalInMinutes the interval in minutes at which the task should run
      */
-    public static void run(long intervalInMinutes) {
-        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+    public static void run(final long intervalInMinutes) {
+        final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
-        Runnable deleteOldRowsTask = () -> {
+        final Runnable deleteOldRowsTask = () -> {
             try (Connection connection = DriverManager.getConnection(DB_URL);
                     PreparedStatement preparedStatement = connection
                             .prepareStatement(DELETE_OLD_ROWS_QUERY1);
@@ -66,16 +66,16 @@ public class ScheduledDeletion {
                         Instant.now().minusSeconds(intervalInMinutes * 60).toString());
                 preparedStatement2.setString(1,
                         Instant.now().minusSeconds(intervalInMinutes * 60).toString());
-                int rowsDeletedT1 = preparedStatement.executeUpdate();
-                int rowsDeletedT2 = preparedStatement2.executeUpdate();
-                int rowsDeletedT3 = preparedStatement3.executeUpdate();
+                final int rowsDeletedT1 = preparedStatement.executeUpdate();
+                final int rowsDeletedT2 = preparedStatement2.executeUpdate();
+                final int rowsDeletedT3 = preparedStatement3.executeUpdate();
 
                 logger.log(Level.FINE, () -> String.format(
                         "%d old rows deleted from multipleCities, " +
                         "%d old rows deleted from forecasts, " + 
                         "%d old rows deleted from subscribes",
                         rowsDeletedT1, rowsDeletedT2, rowsDeletedT3));
-            } catch (SQLException e) {
+            } catch (final SQLException e) {
                 logger.severe(e.toString());
             }
         };

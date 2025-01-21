@@ -11,6 +11,37 @@ import com.example.DataValidation;
 import com.example.exceptions.AppErrorCheckedException;
 import com.example.weather_api.ForecastItem;
 
+/**
+ * The CurrentWeather class provides methods to parse and format current weather information
+ * from a given forecast item and language. It generates a formatted string containing various
+ * weather details such as temperature, humidity, wind speed, and more.
+ * 
+ * <p>This class includes methods to:
+ * <ul>
+ *   <li>Parse a forecast item and generate a formatted string with weather details.</li>
+ *   <li>Optionally append additional weather details to the formatted string.</li>
+ * </ul>
+ * 
+ * <p>Usage example:
+ * <pre>
+ * {@code
+ * ForecastItem forecastItem = ...;
+ * String language = "en";
+ * try {
+ *     String weatherInfo = CurrentWeather.parser(forecastItem, language);
+ *     System.out.println(weatherInfo);
+ * } catch (AppErrorCheckedException e) {
+ *     e.printStackTrace();
+ * }
+ * }
+ * </pre>
+ * 
+ * <p>Note: This class is not meant to be instantiated and has a private constructor to prevent instantiation.
+ * 
+ * @see ForecastItem
+ * @see AppErrorCheckedException
+ * @see DataValidation
+ */
 public class CurrentWeather {
 
     private static final String RUNTIME_ERROR = "Runtime Error";
@@ -26,7 +57,7 @@ public class CurrentWeather {
      * @return A formatted string containing the current weather information.
      * @throws AppErrorCheckedException If an error occurs during parsing.
      */
-    public static String parser(ForecastItem forecastItem, String language)
+    public static String parser(final ForecastItem forecastItem, final String language)
             throws AppErrorCheckedException {
 
         final ResourceBundle rb = DataValidation.getMessages(language);
@@ -79,10 +110,10 @@ public class CurrentWeather {
      * @param rb The resource bundle to use for translation.
      * @throws AppErrorCheckedException If an error occurs during translation.
      */
-    private static void optionalAppend(StringBuilder result, String forecastItemString, String name, String unit,
-            boolean translate, ResourceBundle rb) throws AppErrorCheckedException {
+    private static void optionalAppend(final StringBuilder result, final String forecastItemString, final String name, final String unit,
+            final boolean translate, final ResourceBundle rb) throws AppErrorCheckedException {
 
-        String unitString = translate ? DataValidation.getStringFromResourceBoundle(rb, unit) : unit;
+        final String unitString = translate ? DataValidation.getStringFromResourceBoundle(rb, unit) : unit;
         if (forecastItemString != null && !forecastItemString.isEmpty()){
             result.append(String.format("<b>%s:</b> %s%s%n",
                     DataValidation.getStringFromResourceBoundle(rb, name),

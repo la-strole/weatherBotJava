@@ -22,6 +22,50 @@ import com.example.tlg_bot_handlers.forecast_item_parsers.ForecastFull;
 import com.example.tlg_bot_handlers.forecast_item_parsers.ForecastShort;
 import com.example.weather_api.GetForecastWeatherOpenWeather;
 
+/**
+ * The Forecast class provides methods to handle forecast-related callbacks and navigation for a Telegram bot.
+ * It retrieves city coordinates, fetches forecast data from a weather API, stores it in a database, and updates
+ * messages with forecast information. It also creates navigation keyboards for users to browse through forecasts.
+ * 
+ * <p>Methods in this class:
+ * <ul>
+ * <li>{@link #callbackForecast(Message, TelegramClient, long, String)} - Handles the callback for forecast messages.</li>
+ * <li>{@link #callbackForecastNavigation(String, TelegramClient, int, long, String)} - Handles the navigation of forecast messages.</li>
+ * </ul>
+ * 
+ * <p>Dependencies:
+ * <ul>
+ * <li>{@link Message} - Represents a Telegram message.</li>
+ * <li>{@link TelegramClient} - Represents the Telegram client used to send and edit messages.</li>
+ * <li>{@link GetForecastWeatherOpenWeather} - Fetches forecast data from the weather API.</li>
+ * <li>{@link Database} - Handles database operations for storing and retrieving forecast data.</li>
+ * <li>{@link SendTlgMessage} - Sends and edits Telegram messages.</li>
+ * <li>{@link ForecastFull} - Parses full forecast data.</li>
+ * <li>{@link ForecastShort} - Parses short forecast data.</li>
+ * <li>{@link CallbackValues} - Enum for callback values.</li>
+ * <li>{@link AppErrorCheckedException} - Custom checked exception for application errors.</li>
+ * </ul>
+ * 
+ * <p>Logging:
+ * <ul>
+ * <li>{@link Logger} - Logs messages for debugging and error tracking.</li>
+ * </ul>
+ * 
+ * <p>Exceptions:
+ * <ul>
+ * <li>{@link JSONException} - Handles JSON parsing errors.</li>
+ * <li>{@link UnsupportedOperationException} - Handles unsupported operations.</li>
+ * <li>{@link ClassCastException} - Handles class casting errors.</li>
+ * <li>{@link NullPointerException} - Handles null pointer errors.</li>
+ * <li>{@link IllegalArgumentException} - Handles illegal argument errors.</li>
+ * <li>{@link AppErrorCheckedException} - Handles custom application errors.</li>
+ * </ul>
+ * 
+ * <p>Utility class:
+ * <ul>
+ * <li>Private constructor to prevent instantiation.</li>
+ * </ul>
+ */
 public class Forecast {
 
     private static final Logger logger = Logger.getLogger(Forecast.class.getName());

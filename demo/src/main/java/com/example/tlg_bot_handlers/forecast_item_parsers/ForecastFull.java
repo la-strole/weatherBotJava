@@ -13,6 +13,29 @@ import com.example.DataValidation;
 import com.example.exceptions.AppErrorCheckedException;
 import com.example.weather_api.ForecastItem;
 
+/**
+ * The ForecastFull class provides methods to parse and format forecast items into strings for Telegram bot messages.
+ * It includes methods to parse individual forecast items and generate formatted forecast strings for specific days.
+ * The class also includes a utility method to append formatted forecast item strings to a StringBuilder.
+ * 
+ * <p>Methods in this class may throw {@link AppErrorCheckedException} if an error occurs during parsing or translation.</p>
+ * 
+ * <p>Example usage:</p>
+ * <pre>
+ * {@code
+ * JSONArray forecasts = ...; // Obtain the JSONArray of forecast items
+ * String language = "en"; // Specify the language code for localization
+ * String forecastString = ForecastFull.getForecastStringToSpecificDay(forecasts, language);
+ * System.out.println(forecastString);
+ * }
+ * </pre>
+ * 
+ * <p>This class is not meant to be instantiated, as it only contains static utility methods.</p>
+ * 
+ * @see ForecastItem
+ * @see AppErrorCheckedException
+ * @see DataValidation
+ */
 public class ForecastFull {
 
     private static Logger logger = Logger.getLogger(ForecastFull.class.getName());
@@ -82,11 +105,19 @@ public class ForecastFull {
         }
     }
 
-    public static String getForecastStringToSpecificDay(JSONArray forecasts, String language) throws AppErrorCheckedException {
-        StringBuilder text = new StringBuilder();
+    /**
+     * Generates a formatted forecast string for a specific day from a JSONArray of forecast items.
+     *
+     * @param forecasts the JSONArray containing forecast items
+     * @param language the language tag to format the date
+     * @return a formatted string containing the forecast information
+     * @throws AppErrorCheckedException if there is an error during deserialization of forecast items
+     */
+    public static String getForecastStringToSpecificDay(final JSONArray forecasts, final String language) throws AppErrorCheckedException {
+        final StringBuilder text = new StringBuilder();
             
         for (int i = 0; i < forecasts.length(); i++){
-            ForecastItem forecastItem = ForecastItem.deserializeFromJonObject(forecasts.getJSONObject(i));
+            final ForecastItem forecastItem = ForecastItem.deserializeFromJonObject(forecasts.getJSONObject(i));
             if (i == 0){
                 text.append(String.format("<b>%s:\t%s</b>%n", 
                     forecastItem.getCityName(), 
