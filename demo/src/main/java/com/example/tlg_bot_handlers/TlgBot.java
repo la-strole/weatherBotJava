@@ -17,6 +17,10 @@ public class TlgBot implements LongPollingSingleThreadUpdateConsumer {
         telegramClient = new OkHttpTelegramClient(botToken);
     }
 
+    public TelegramClient getTelegramClient(){
+        return this.telegramClient;
+    }
+
     @Override
     public void consume(Update update) {
 

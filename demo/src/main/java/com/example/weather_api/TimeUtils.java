@@ -16,11 +16,12 @@ public class TimeUtils {
         throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
     }
 
-    private static final Logger logger  = Logger.getLogger(TimeUtils.class.getName());
+    private static final Logger logger = Logger.getLogger(TimeUtils.class.getName());
     private static final String RUNTIME_ERROR = "Runtime error.";
 
     /**
-     * Converts a Unix timestamp to a LocalDateTime object considering the timezone offset.
+     * Converts a Unix timestamp to a LocalDateTime object considering the timezone
+     * offset.
      *
      * @param unixTime The Unix timestamp to convert.
      * @param timezone The timezone offset in seconds.

@@ -121,7 +121,7 @@ public class CommandHandler {
                 for (int i = 0; i < subscriptions.length(); i++) {
 
                     JSONObject subscriptionRow = subscriptions.getJSONObject(i);
-                    String text = String.format("<b>%s %s</b>%nlon=%f%nlat=%f",
+                    String text = String.format("<b>%s UTC %s</b>%nlon=%f%nlat=%f",
                             subscriptionRow.getString("cityName"),
                             subscriptionRow.getString("time"),
                             subscriptionRow.getDouble("lon"), subscriptionRow.getDouble("lat"));

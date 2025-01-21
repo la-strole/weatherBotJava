@@ -44,7 +44,7 @@ public class Subscription {
                 final double lon = geocodingApiResponse.getJSONObject(0).getDouble("lon");
                 final double lat = geocodingApiResponse.getJSONObject(0).getDouble("lat");
                 // Insert cityName to database.
-                Database.addSubscriptionCity(chatId, lon, lat, cityName);
+                Database.addSubscriptionCity(chatId, lon, lat, cityName, language);
                 String msgText = String.format(ADD_TIME_HEADER, lon, lat);
                 msgText += DataValidation.getStringFromResourceBoundle(DataValidation.getMessages(language),
                         "subscriptionsCommandAddCityTimeText");
@@ -76,7 +76,7 @@ public class Subscription {
             final String cityName, final String language) {
         try {
             // Insert cityName to database.
-            Database.addSubscriptionCity(chatId, lon, lat, cityName);
+            Database.addSubscriptionCity(chatId, lon, lat, cityName, language);
             // Send message to user to get time.
             String msgText = String.format(ADD_TIME_HEADER, lon, lat);
             msgText += DataValidation.getStringFromResourceBoundle(DataValidation.getMessages(language),

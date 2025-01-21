@@ -75,7 +75,7 @@ public class ScheduledDeletion {
                 int rowsDeletedT2 = preparedStatement2.executeUpdate();
                 int rowsDeletedT3 = preparedStatement3.executeUpdate();
 
-                logger.log(Level.INFO, () -> String.format(
+                logger.log(Level.FINE, () -> String.format(
                         "%d old rows deleted from multipleCities, " +
                         "%d old rows deleted from forecasts, " + 
                         "%d old rows deleted from subscribes",

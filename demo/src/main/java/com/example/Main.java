@@ -10,6 +10,7 @@ import org.telegram.telegrambots.longpolling.TelegramBotsLongPollingApplication;
 import com.example.database.Database;
 import com.example.database.ScheduledDeletion;
 import com.example.tlg_bot_handlers.TlgBot;
+import com.example.tlg_bot_handlers.SendScheduledMessage;
 
 import io.github.cdimascio.dotenv.Dotenv;
 
@@ -29,11 +30,14 @@ public class Main {
         final String botToken = Dotenv.load().get("TelegramBotToken");
         try (TelegramBotsLongPollingApplication botsApplication =
                 new TelegramBotsLongPollingApplication()) {
-            botsApplication.registerBot(botToken, new TlgBot(botToken));
+            TlgBot bot = new TlgBot(botToken);
+            botsApplication.registerBot(botToken, bot);
             Database.createTable();
             logger.log(Level.INFO, () -> "TlgBot successfully started!");
             // Run the scheduled deletion task
             ScheduledDeletion.run(15);
+            // Run the sceduledd message sender
+            SendScheduledMessage.run(60, bot.getTelegramClient());
             Thread.currentThread().join();
         } catch (final InterruptedException e) {
             Thread.currentThread().interrupt();

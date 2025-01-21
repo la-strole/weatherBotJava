@@ -5,8 +5,11 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.DateTimeException;
 import java.time.Instant;
 import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -53,7 +56,7 @@ public class Database {
         final String createTable3SQL = "CREATE TABLE IF NOT EXISTS subscribes ("
                 + "id INT AUTO_INCREMENT PRIMARY KEY," + "chatId INT NOT NULL,"
                 + "lon REAL NOT NULL," + "lat REAL NOT NULL," + "cityName TEXT NOT NULL,"
-                + "time TEXT," + "created_at TEXT NOT NULL," + "UNIQUE(lon,lat,time)" + ")";
+                + "time TEXT," + "language TEXT NOT NULL," + "created_at TEXT NOT NULL," + "UNIQUE(lon,lat,time)" + ")";
         final String createTable4SQL = "CREATE TABLE IF NOT EXISTS fullForecast ("
                 + "id INT AUTO_INCREMENT PRIMARY KEY," + "chatId INT NOT NULL,"
                 + "isFullForecast INT NOT NULL," + "created_at TEXT NOT NULL" + ")";
@@ -222,12 +225,13 @@ public class Database {
         }
     }
 
-    public static void addSubscriptionCity(final long chatId, final Double lon, final Double lat, String cityName)
-            throws AppErrorCheckedException {
+    public static void addSubscriptionCity(final long chatId, final Double lon, final Double lat, String cityName,
+            String language) throws AppErrorCheckedException {
 
-        final String insertSQL = "INSERT INTO subscribes (chatId, cityName, lon, lat, created_at) VALUES (?, ?, ?, ?, ?)";
+        final String insertSQL = "INSERT INTO subscribes " + 
+            "(chatId, cityName, lon, lat, language, created_at) VALUES (?, ?, ?, ?, ?, ?)";
         // Clear garbage.
-        try { 
+        try {
             deleteNullTimeRows(chatId, lon, lat);
         } catch (AppErrorCheckedException e) {
             throw new AppErrorCheckedException(RUNTIME_ERROR);
@@ -245,7 +249,8 @@ public class Database {
             insertStmt.setString(2, cityName);
             insertStmt.setDouble(3, lon);
             insertStmt.setDouble(4, lat);
-            insertStmt.setString(5, Instant.now().toString());
+            insertStmt.setString(5, language);
+            insertStmt.setString(6, Instant.now().toString());
             insertStmt.executeUpdate();
         } catch (final SQLException e) {
             logger.log(Level.SEVERE, e::toString);
@@ -452,6 +457,32 @@ public class Database {
             final ResultSet rs = selectStmt.executeQuery();
             return rs.next();
         } catch (final SQLException e) {
+            logger.log(Level.SEVERE, e::toString);
+            throw new AppErrorCheckedException(RUNTIME_ERROR);
+        }
+    }
+
+    public static JSONArray getSubscriptionSheduled() throws AppErrorCheckedException {
+        final String selectStmt = "SELECT chatId, lon, lat, language FROM subscribes WHERE time = ?";
+        String currentTime = Instant.now()
+                .atZone(ZoneId.of("UTC"))
+                .format(DateTimeFormatter.ofPattern("HH:mm"));
+        try (Connection connection = DriverManager.getConnection(DATABASE_URL);
+                PreparedStatement preparedStatement = connection
+                        .prepareStatement(selectStmt)) {
+            preparedStatement.setString(1, currentTime);
+            ResultSet rs = preparedStatement.executeQuery();
+            JSONArray result = new JSONArray();
+            while (rs.next()) {
+                JSONObject object = new JSONObject();
+                object.put("chatId", rs.getLong("chatId"));
+                object.put("lon", rs.getDouble("lon"));
+                object.put("lat", rs.getDouble("lat"));
+                object.put("language", rs.getString("language"));
+                result.put(object);
+            }
+            return result;
+        } catch (SQLException | DateTimeException | JSONException e) {
             logger.log(Level.SEVERE, e::toString);
             throw new AppErrorCheckedException(RUNTIME_ERROR);
         }
