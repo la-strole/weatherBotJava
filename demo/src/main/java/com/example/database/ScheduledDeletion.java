@@ -39,16 +39,11 @@ import java.util.logging.Logger;
  */
 public class ScheduledDeletion {
 
-    // Private constructor to hide the implicit public one
-    private ScheduledDeletion() {
-        throw new IllegalStateException("This is a utility class and cannot be instantiated");
-    }
-
     private static final String DB_URL = Database.DATABASE_URL; // Update with your database path
+
     private static final String DELETE_OLD_ROWS_QUERY1 = "DELETE FROM multipleCities WHERE created_at < ?";
     private static final String DELETE_OLD_ROWS_QUERY2 = "DELETE FROM forecasts WHERE created_at < ?";
     private static final String DELETE_NULL_TIME_ROWS = "DELETE FROM subscribes WHERE time is NULL";
-
     private static final Logger logger = Logger.getLogger(ScheduledDeletion.class.getName());
 
     /**
@@ -87,5 +82,10 @@ public class ScheduledDeletion {
 
         // Schedule the task to run every 15 minutes
         scheduler.scheduleAtFixedRate(deleteOldRowsTask, 0, intervalInMinutes, TimeUnit.MINUTES);
+    }
+
+    // Private constructor to hide the implicit public one
+    private ScheduledDeletion() {
+        throw new IllegalStateException("This is a utility class and cannot be instantiated");
     }
 }

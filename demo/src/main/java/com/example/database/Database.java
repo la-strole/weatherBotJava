@@ -21,6 +21,41 @@ import com.example.DataValidation;
 import com.example.exceptions.AppErrorCheckedException;
 import com.example.exceptions.AppErrorException;
 
+/**
+ * The Database class provides methods for interacting with a SQLite database.
+ * It includes methods for creating tables, inserting and updating data, and retrieving data.
+ * 
+ * The tables managed by this class are:
+ * - multipleCities: Stores information about multiple cities with columns for id, chatId, msgId, coordinates, and created_at.
+ * - forecasts: Stores weather forecasts with columns for id, chatId, msgId, forecast, and created_at.
+ * - subscribes: Stores subscription information with columns for id, chatId, lon, lat, cityName, time, language, and created_at.
+ * - fullForecast: Stores full forecast flag with columns for id, chatId, isFullForecast, and created_at.
+ * 
+ * The class also sets the SQLite auto_vacuum pragma to FULL.
+ * 
+ * Methods:
+ * - createTable(): Creates the necessary tables in the database if they do not already exist.
+ * - insertCoordinates(long chatId, long msgId, JSONArray citiesCoordinates): Inserts or updates city coordinates for a given chat ID in the database.
+ * - getCoordinates(long chatId, long msgId): Retrieves the coordinates associated with a specific chat ID and message ID from the database.
+ * - insertForecast(long chatId, long msgId, JSONArray forecast): Inserts or updates a forecast in the database for a given chat ID.
+ * - getForecast(long chatId, long msgId): Retrieves the weather forecast for a specific chat and message ID from the database.
+ * - addSubscriptionCity(long chatId, Double lon, Double lat, String cityName, String language): Adds a subscription city to the database for a given chat ID.
+ * - addSubscriptionTime(long chatId, double lon, double lat, LocalTime time): Adds a subscription time for a specific chat ID and location (longitude and latitude).
+ * - getSubscription(long chatId): Retrieves the subscription details for a specific chat ID from the database.
+ * - cancelSubscription(long chatId, double lon, double lat, LocalTime time): Cancels a subscription for a specific chat ID, longitude, and latitude.
+ * - insertIsFullForecast(long chatId, boolean value): Inserts or updates the full forecast status for a given chat ID in the database.
+ * - getisFullForecast(long chatId): Retrieves the full forecast status for a given chat ID from the database.
+ * - getSubscriptionSheduled(): Retrieves the scheduled subscriptions from the database.
+ * - deleteNullTimeRows(long chatId, double lon, double lat): Deletes rows from the 'subscribes' table where the 'time' column is NULL.
+ * - ifChatIdInDb(long chatId, String tableName): Checks if a given chat ID exists in the specified table.
+ * 
+ * Exceptions:
+ * - AppErrorException: Thrown if there is an error creating the tables.
+ * - AppErrorCheckedException: Thrown if a database access error occurs.
+ * 
+ * Note:
+ * - The class is designed as a utility class and cannot be instantiated.
+ */
 public class Database {
     public static final String DATABASE_URL = "jdbc:sqlite:database.db";
 
@@ -225,11 +260,21 @@ public class Database {
         }
     }
 
+    /**
+     * Adds a subscription city to the database for a given chat ID.
+     *
+     * @param chatId   the chat ID to associate with the subscription
+     * @param lon      the longitude of the city
+     * @param lat      the latitude of the city
+     * @param cityName the name of the city
+     * @param language the language preference for the subscription
+     * @throws AppErrorCheckedException if there is an error during the operation
+     */
     public static void addSubscriptionCity(final long chatId, final Double lon, final Double lat, String cityName,
             String language) throws AppErrorCheckedException {
 
-        final String insertSQL = "INSERT INTO subscribes " + 
-            "(chatId, cityName, lon, lat, language, created_at) VALUES (?, ?, ?, ?, ?, ?)";
+        final String insertSQL = "INSERT INTO subscribes " +
+                "(chatId, cityName, lon, lat, language, created_at) VALUES (?, ?, ?, ?, ?, ?)";
         // Clear garbage.
         try {
             deleteNullTimeRows(chatId, lon, lat);
@@ -259,21 +304,18 @@ public class Database {
 
     }
 
-    private static void deleteNullTimeRows(final long chatId, final double lon, final double lat)
-            throws AppErrorCheckedException {
-        final String deleteSQL = "DELETE FROM subscribes WHERE chatID = ? AND lon = ? AND lat = ? AND time is NULL";
-        try (Connection conn = DriverManager.getConnection(DATABASE_URL);
-                PreparedStatement deleteStmt = conn.prepareStatement(deleteSQL)) {
-            deleteStmt.setLong(1, chatId);
-            deleteStmt.setDouble(2, lon);
-            deleteStmt.setDouble(3, lat);
-            deleteStmt.executeUpdate();
-        } catch (SQLException e) {
-            logger.log(Level.SEVERE, e::toString);
-            throw new AppErrorCheckedException(RUNTIME_ERROR);
-        }
-    }
-
+    /**
+     * Adds a subscription time for a specific chat ID and location (longitude and
+     * latitude).
+     * Updates the subscription time and creation timestamp in the database where
+     * the time is currently NULL.
+     *
+     * @param chatId the chat ID to update the subscription time for
+     * @param lon    the longitude of the location
+     * @param lat    the latitude of the location
+     * @param time   the subscription time to be added
+     * @throws AppErrorCheckedException if a database access error occurs
+     */
     public static void addSubscriptionTime(final long chatId, final double lon, final double lat, final LocalTime time)
             throws AppErrorCheckedException {
 
@@ -432,6 +474,69 @@ public class Database {
     }
 
     /**
+     * Retrieves the scheduled subscriptions from the database.
+     * 
+     * This method queries the database for subscriptions that are scheduled at the
+     * current UTC time.
+     * It returns a JSONArray containing the subscription details such as chatId,
+     * longitude, latitude, and language.
+     * 
+     * @return JSONArray containing the subscription details.
+     * @throws AppErrorCheckedException if there is an error during the database
+     *                                  query or data processing.
+     */
+    public static JSONArray getSubscriptionSheduled() throws AppErrorCheckedException {
+        final String selectStmt = "SELECT chatId, lon, lat, language FROM subscribes WHERE time = ?";
+        String currentTime = Instant.now()
+                .atZone(ZoneId.of("UTC"))
+                .format(DateTimeFormatter.ofPattern("HH:mm"));
+        try (Connection connection = DriverManager.getConnection(DATABASE_URL);
+                PreparedStatement preparedStatement = connection
+                        .prepareStatement(selectStmt)) {
+            preparedStatement.setString(1, currentTime);
+            ResultSet rs = preparedStatement.executeQuery();
+            JSONArray result = new JSONArray();
+            while (rs.next()) {
+                JSONObject object = new JSONObject();
+                object.put("chatId", rs.getLong("chatId"));
+                object.put("lon", rs.getDouble("lon"));
+                object.put("lat", rs.getDouble("lat"));
+                object.put("language", rs.getString("language"));
+                result.put(object);
+            }
+            return result;
+        } catch (SQLException | DateTimeException | JSONException e) {
+            logger.log(Level.SEVERE, e::toString);
+            throw new AppErrorCheckedException(RUNTIME_ERROR);
+        }
+    }
+
+    /**
+     * Deletes rows from the 'subscribes' table where the 'time' column is NULL.
+     * The rows to be deleted are identified by the specified chat ID, longitude,
+     * and latitude.
+     *
+     * @param chatId the chat ID to identify the rows to be deleted
+     * @param lon    the longitude to identify the rows to be deleted
+     * @param lat    the latitude to identify the rows to be deleted
+     * @throws AppErrorCheckedException if a database access error occurs
+     */
+    private static void deleteNullTimeRows(final long chatId, final double lon, final double lat)
+            throws AppErrorCheckedException {
+        final String deleteSQL = "DELETE FROM subscribes WHERE chatID = ? AND lon = ? AND lat = ? AND time is NULL";
+        try (Connection conn = DriverManager.getConnection(DATABASE_URL);
+                PreparedStatement deleteStmt = conn.prepareStatement(deleteSQL)) {
+            deleteStmt.setLong(1, chatId);
+            deleteStmt.setDouble(2, lon);
+            deleteStmt.setDouble(3, lat);
+            deleteStmt.executeUpdate();
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, e::toString);
+            throw new AppErrorCheckedException(RUNTIME_ERROR);
+        }
+    }
+
+    /**
      * Checks if a given chat ID exists in the specified table.
      *
      * @param chatId    The chat ID to check for existence in the database.
@@ -457,32 +562,6 @@ public class Database {
             final ResultSet rs = selectStmt.executeQuery();
             return rs.next();
         } catch (final SQLException e) {
-            logger.log(Level.SEVERE, e::toString);
-            throw new AppErrorCheckedException(RUNTIME_ERROR);
-        }
-    }
-
-    public static JSONArray getSubscriptionSheduled() throws AppErrorCheckedException {
-        final String selectStmt = "SELECT chatId, lon, lat, language FROM subscribes WHERE time = ?";
-        String currentTime = Instant.now()
-                .atZone(ZoneId.of("UTC"))
-                .format(DateTimeFormatter.ofPattern("HH:mm"));
-        try (Connection connection = DriverManager.getConnection(DATABASE_URL);
-                PreparedStatement preparedStatement = connection
-                        .prepareStatement(selectStmt)) {
-            preparedStatement.setString(1, currentTime);
-            ResultSet rs = preparedStatement.executeQuery();
-            JSONArray result = new JSONArray();
-            while (rs.next()) {
-                JSONObject object = new JSONObject();
-                object.put("chatId", rs.getLong("chatId"));
-                object.put("lon", rs.getDouble("lon"));
-                object.put("lat", rs.getDouble("lat"));
-                object.put("language", rs.getString("language"));
-                result.put(object);
-            }
-            return result;
-        } catch (SQLException | DateTimeException | JSONException e) {
             logger.log(Level.SEVERE, e::toString);
             throw new AppErrorCheckedException(RUNTIME_ERROR);
         }
