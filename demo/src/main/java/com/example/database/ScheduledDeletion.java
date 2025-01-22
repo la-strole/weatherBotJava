@@ -52,36 +52,37 @@ public class ScheduledDeletion {
      * @param intervalInMinutes the interval in minutes at which the task should run
      */
     public static void run(final long intervalInMinutes) {
-        final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+        try (ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1)) {
 
-        final Runnable deleteOldRowsTask = () -> {
-            try (Connection connection = DriverManager.getConnection(DB_URL);
-                    PreparedStatement preparedStatement = connection
-                            .prepareStatement(DELETE_OLD_ROWS_QUERY1);
-                    PreparedStatement preparedStatement2 = connection
-                            .prepareStatement(DELETE_OLD_ROWS_QUERY2);
-                    PreparedStatement preparedStatement3 = connection
-                            .prepareStatement(DELETE_NULL_TIME_ROWS)) {
-                preparedStatement.setString(1,
-                        Instant.now().minusSeconds(intervalInMinutes * 60).toString());
-                preparedStatement2.setString(1,
-                        Instant.now().minusSeconds(intervalInMinutes * 60).toString());
-                final int rowsDeletedT1 = preparedStatement.executeUpdate();
-                final int rowsDeletedT2 = preparedStatement2.executeUpdate();
-                final int rowsDeletedT3 = preparedStatement3.executeUpdate();
+            final Runnable deleteOldRowsTask = () -> {
+                try (Connection connection = DriverManager.getConnection(DB_URL);
+                        PreparedStatement preparedStatement = connection
+                                .prepareStatement(DELETE_OLD_ROWS_QUERY1);
+                        PreparedStatement preparedStatement2 = connection
+                                .prepareStatement(DELETE_OLD_ROWS_QUERY2);
+                        PreparedStatement preparedStatement3 = connection
+                                .prepareStatement(DELETE_NULL_TIME_ROWS)) {
+                    preparedStatement.setString(1,
+                            Instant.now().minusSeconds(intervalInMinutes * 60).toString());
+                    preparedStatement2.setString(1,
+                            Instant.now().minusSeconds(intervalInMinutes * 60).toString());
+                    final int rowsDeletedT1 = preparedStatement.executeUpdate();
+                    final int rowsDeletedT2 = preparedStatement2.executeUpdate();
+                    final int rowsDeletedT3 = preparedStatement3.executeUpdate();
 
-                logger.log(Level.FINE, () -> String.format(
-                        "%d old rows deleted from multipleCities, " +
-                        "%d old rows deleted from forecasts, " + 
-                        "%d old rows deleted from subscribes",
-                        rowsDeletedT1, rowsDeletedT2, rowsDeletedT3));
-            } catch (final SQLException e) {
-                logger.severe(e.toString());
-            }
-        };
+                    logger.log(Level.FINE, () -> String.format(
+                            "%d old rows deleted from multipleCities, " +
+                            "%d old rows deleted from forecasts, " + 
+                            "%d old rows deleted from subscribes",
+                            rowsDeletedT1, rowsDeletedT2, rowsDeletedT3));
+                } catch (final SQLException e) {
+                    logger.severe(e.toString());
+                }
+            };
 
-        // Schedule the task to run every 15 minutes
-        scheduler.scheduleAtFixedRate(deleteOldRowsTask, 0, intervalInMinutes, TimeUnit.MINUTES);
+            // Schedule the task to run every 15 minutes
+            scheduler.scheduleAtFixedRate(deleteOldRowsTask, 0, intervalInMinutes, TimeUnit.MINUTES);
+        }
     }
 
     // Private constructor to hide the implicit public one
