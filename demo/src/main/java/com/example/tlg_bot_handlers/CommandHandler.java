@@ -20,6 +20,29 @@ import com.example.DataValidation;
 import com.example.database.Database;
 import com.example.exceptions.AppErrorCheckedException;
 
+/**
+ * CommandHandler is responsible for handling various commands received from the Telegram bot.
+ * It processes commands such as /start, /help, /subscriptions, /subscriptions_add, and /change_forecast_type.
+ * Each command triggers a specific method to handle the command's functionality.
+ * 
+ * Constructor:
+ * @param client   The TelegramClient instance used to communicate with the Telegram API.
+ * @param update   The Update object containing the incoming message and its details.
+ * @param language The language code for localization.
+ * 
+ * Methods:
+ * - handleCommand(): Determines which command was received and calls the appropriate handler method.
+ * - handleCommandStart(): Handles the /start command, sets up bot commands, and sends a welcome message.
+ * - handleCommandHelp(): Handles the /help command, sends a help message with available commands.
+ * - handleCommandShowSubscriptions(): Handles the /subscriptions command, retrieves and displays user subscriptions.
+ * - handleCommandSubscriptionAddCity(): Handles the /subscriptions_add command, prompts the user to add a city.
+ * - handleCommandChangeForecastType(): Handles the /change_forecast_type command, toggles the forecast type setting.
+ * - handleCommandDefault(): Handles unknown commands, sends a default error message.
+ * 
+ * Exceptions:
+ * - AppErrorCheckedException: Custom exception for application-specific errors.
+ * - TelegramApiException: Exception for errors related to the Telegram API.
+ */
 public class CommandHandler {
     private static final Logger logger = Logger.getLogger(CommandHandler.class.getName());
 
@@ -120,17 +143,17 @@ public class CommandHandler {
                 // StringBuilder cityList
                 for (int i = 0; i < subscriptions.length(); i++) {
 
-                    JSONObject subscriptionRow = subscriptions.getJSONObject(i);
-                    String text = String.format("<b>%s UTC %s</b>%nlon=%f%nlat=%f",
+                    final JSONObject subscriptionRow = subscriptions.getJSONObject(i);
+                    final String text = String.format("<b>%s UTC %s</b>%nlon=%f%nlat=%f",
                             subscriptionRow.getString("cityName"),
                             subscriptionRow.getString("time"),
                             subscriptionRow.getDouble("lon"), subscriptionRow.getDouble("lat"));
-                    String buttonText = DataValidation.getStringFromResourceBoundle(
+                    final String buttonText = DataValidation.getStringFromResourceBoundle(
                             DataValidation.getMessages(language), "subscriptionsRemoveSunscriptionButtonText");
-                    InlineKeyboardButton button = InlineKeyboardButton.builder()
+                    final InlineKeyboardButton button = InlineKeyboardButton.builder()
                             .callbackData(CallbackHandler.CallbackValues.RS.name()).text(buttonText)
                             .build();
-                    List<List<InlineKeyboardButton>> keyboard = List.of(List.of(button));
+                    final List<List<InlineKeyboardButton>> keyboard = List.of(List.of(button));
                     SendTlgMessage.send(telegramClient, chatId, text, keyboard);
                 }
                 // If the subscriptions list is empty.

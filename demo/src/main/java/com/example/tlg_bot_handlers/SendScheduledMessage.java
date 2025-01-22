@@ -16,6 +16,42 @@ import com.example.tlg_bot_handlers.forecast_item_parsers.ForecastFull;
 import com.example.tlg_bot_handlers.forecast_item_parsers.ForecastShort;
 import com.example.weather_api.GetForecastWeatherOpenWeather;
 
+/**
+ * The SendScheduledMessage class is responsible for scheduling and sending weather forecast messages
+ * to subscribed users at a specified interval.
+ * 
+ * <p>This class uses a ScheduledExecutorService to periodically fetch weather forecast data and send
+ * messages to users who have subscribed to receive weather updates. The weather data is retrieved
+ * from an external weather service and formatted based on user preferences before being sent via
+ * a Telegram client.</p>
+ * 
+ * <p>Usage:</p>
+ * <pre>
+ * {@code
+ * TelegramClient telegramClient = new TelegramClient();
+ * SendScheduledMessage.run(900, telegramClient); // Schedule to run every 15 minutes
+ * }
+ * </pre>
+ * 
+ * <p>Note: This class cannot be instantiated as it has a private constructor.</p>
+ * 
+ * <p>Dependencies:</p>
+ * <ul>
+ *   <li>Database: For retrieving subscription and forecast type data.</li>
+ *   <li>GetForecastWeatherOpenWeather: For fetching weather forecast data.</li>
+ *   <li>ForecastFull and ForecastShort: For formatting the forecast data.</li>
+ *   <li>SendTlgMessage: For sending messages via Telegram.</li>
+ * </ul>
+ * 
+ * <p>Exceptions:</p>
+ * <ul>
+ *   <li>AppErrorCheckedException: If an error occurs while fetching or processing data.</li>
+ * </ul>
+ * 
+ * @see java.util.concurrent.ScheduledExecutorService
+ * @see java.util.concurrent.Executors
+ * @see java.util.concurrent.TimeUnit
+ */
 public class SendScheduledMessage {
 
     private static final Logger logger = Logger.getLogger(SendScheduledMessage.class.getName());
@@ -55,5 +91,10 @@ public class SendScheduledMessage {
 
         // Schedule the task to run every 15 minutes
         scheduler.scheduleAtFixedRate(sendMessagesToSubscribes, 0, intervalInSeconds, TimeUnit.SECONDS);
+    }
+
+    private SendScheduledMessage() {
+        // Private constructor to hide the implicit public one
+        throw new IllegalStateException("Utility class");
     }
 }

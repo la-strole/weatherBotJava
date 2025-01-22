@@ -17,12 +17,52 @@ import org.telegram.telegrambots.meta.generics.TelegramClient;
 import com.example.DataValidation;
 import com.example.exceptions.AppErrorCheckedException;
 
+/**
+ * The SendTlgMessage class provides methods to send and edit messages in a Telegram chat
+ * using a provided Telegram client. It includes methods to send default error messages,
+ * text messages with or without inline keyboards, and messages with a ForceReply keyboard.
+ * It also includes methods to edit existing messages with or without inline keyboards.
+ * 
+ * <p>All methods in this class are static and can be accessed without creating an instance
+ * of the class. The class is designed to be a utility class and cannot be instantiated.
+ * 
+ * <p>Each method that interacts with the Telegram API handles exceptions and logs errors
+ * using a logger. If an error occurs during the execution of a Telegram API call, an
+ * AppErrorCheckedException is thrown.
+ * 
+ * <p>Methods:
+ * <ul>
+ * <li>{@link #sendDefaultError(TelegramClient, String, long)} - Sends a default error message to a chat.
+ * <li>{@link #send(TelegramClient, long, String)} - Sends a text message to a chat.
+ * <li>{@link #send(TelegramClient, long, String, List)} - Sends a text message with an inline keyboard to a chat.
+ * <li>{@link #sendForceReply(TelegramClient, long, String)} - Sends a message with a ForceReply keyboard to a chat.
+ * <li>{@link #sendReplyWithKeyboard(TelegramClient, long, String, int, List)} - Sends a reply message with an inline keyboard to a chat.
+ * <li>{@link #editMessageWithKeyboard(TelegramClient, int, long, String, List)} - Edits a message text with an inline keyboard in a chat.
+ * <li>{@link #editMessageWithoutKeyboard(TelegramClient, int, long, String)} - Edits a message text without an inline keyboard in a chat.
+ * </ul>
+ * 
+ * <p>Exceptions:
+ * <ul>
+ * <li>{@link AppErrorCheckedException} - Thrown if an error occurs during the execution of a Telegram API call.
+ * </ul>
+ * 
+ * <p>Logging:
+ * <ul>
+ * <li>Errors are logged using a logger with a severity level of SEVERE.
+ * </ul>
+ * 
+ * <p>Note: This class cannot be instantiated and will throw an IllegalStateException if an attempt is made to do so.
+ * 
+ * @see TelegramClient
+ * @see SendMessage
+ * @see EditMessageText
+ * @see InlineKeyboardButton
+ * @see InlineKeyboardMarkup
+ * @see ForceReplyKeyboard
+ * @see AppErrorCheckedException
+ */
 public class SendTlgMessage {
     private static final Logger logger = Logger.getLogger(SendTlgMessage.class.getName());
-
-    private SendTlgMessage() {
-        throw new IllegalStateException("Utility class");
-    }
 
     static final String RUNTIME_ERROR = "Runtime Errror.";
 
@@ -224,5 +264,9 @@ public class SendTlgMessage {
             logger.log(Level.SEVERE, e::toString);
             throw new AppErrorCheckedException(RUNTIME_ERROR);
         }
+    }
+
+    private SendTlgMessage() {
+        throw new IllegalStateException("Utility class");
     }
 }
