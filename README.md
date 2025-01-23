@@ -20,7 +20,7 @@ This project is a Telegram bot that provides weather updates using the OpenWeath
 
 1. Clone the repository:
     ```sh
-    git clone https://github.com/yourusername/telegramweatherbot.git
+    git clone https://github.com/la-strole/weatherBotJava.git
     cd telegramweatherbot
     ```
 
