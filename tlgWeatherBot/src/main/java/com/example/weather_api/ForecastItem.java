@@ -17,18 +17,31 @@ import lombok.Setter;
 
 /**
  * Represents a weather forecast item with various weather-related attributes.
- * Provides methods to serialize and deserialize the object to and from a JSONObject.
+ * Provides methods to serialize and deserialize the object to and from a
+ * JSONObject.
  * 
- * <p>This class includes attributes such as date and time of the forecast, city timezone,
- * sunrise and sunset times, temperature, pressure, humidity, weather description, cloudiness,
- * wind speed and direction, visibility, probability of precipitation, rain and snow volumes,
- * city name, latitude, longitude, and country.</p>
+ * <p>
+ * This class includes attributes such as date and time of the forecast, city
+ * timezone,
+ * sunrise and sunset times, temperature, pressure, humidity, weather
+ * description, cloudiness,
+ * wind speed and direction, visibility, probability of precipitation, rain and
+ * snow volumes,
+ * city name, latitude, longitude, and country.
+ * </p>
  * 
- * <p>Serialization and deserialization methods handle the conversion of these attributes
- * to and from a JSONObject, and may throw an AppErrorCheckedException if an error occurs
- * during the process.</p>
+ * <p>
+ * Serialization and deserialization methods handle the conversion of these
+ * attributes
+ * to and from a JSONObject, and may throw an AppErrorCheckedException if an
+ * error occurs
+ * during the process.
+ * </p>
  * 
- * <p>Example usage:</p>
+ * <p>
+ * Example usage:
+ * </p>
+ * 
  * <pre>
  * {@code
  * ForecastItem forecastItem = new ForecastItem();
@@ -38,8 +51,11 @@ import lombok.Setter;
  * }
  * </pre>
  * 
- * <p>Note: The class uses Lombok annotations for generating boilerplate code such as
- * getters, setters, and a no-argument constructor.</p>
+ * <p>
+ * Note: The class uses Lombok annotations for generating boilerplate code such
+ * as
+ * getters, setters, and a no-argument constructor.
+ * </p>
  * 
  * @see JSONObject
  * @see AppErrorCheckedException
@@ -53,6 +69,42 @@ public class ForecastItem {
 
     private static final String RUNTIME_ERROR = "Runtime Error.";
 
+    @NonNull
+    private LocalDateTime dt; // convert
+    @NonNull
+    private Long cityTimezone;
+    @NonNull
+    private LocalDateTime sunrise;
+    @NonNull
+    private LocalDateTime sunset;
+    @NonNull
+    private Integer temp; // convert
+    @NonNull
+    private Integer feelsLike; // convert
+    private String pressure;
+    private String humidity;
+    @NonNull
+    private String description;
+    private String clouds;
+    private String windSpeed;
+    private String windDeg;
+    private String windGust;
+    private String visibility;
+    private String probabilityOfPrecipitation; // convert
+    private String rainh; // one or three hours
+    private String snowh; // one or three hours
+    @NonNull
+    private String cityName;
+    @NonNull
+    private Double lat;
+    @NonNull
+    private Double lon;
+    @NonNull
+    private String cityCountry;
+
+    public LocalDateTime getDt(){
+        return this.dt;
+    }
     /**
      * Serializes a ForecastItem object into a JSONObject.
      *
@@ -94,6 +146,7 @@ public class ForecastItem {
             throw new AppErrorCheckedException(RUNTIME_ERROR);
         }
     }
+
     /**
      * Deserializes a ForecastItem object from a JSONObject.
      *
@@ -135,40 +188,6 @@ public class ForecastItem {
             throw new AppErrorCheckedException(RUNTIME_ERROR);
         }
     }
-    @NonNull
-    private LocalDateTime dt; // convert
-    @NonNull
-    private Long cityTimezone;
-    @NonNull
-    private LocalDateTime sunrise;
-    @NonNull
-    private LocalDateTime sunset;
-    @NonNull
-    private Integer temp; // convert
-    @NonNull
-    private Integer feelsLike; // convert
-    private String pressure;
-    private String humidity;
-    @NonNull
-    private String description;
-    private String clouds;
-    private String windSpeed;
-    private String windDeg;
-    private String windGust;
-    private String visibility;
-    private String probabilityOfPrecipitation; // convert
-    private String rainh; // one or three hours
-    private String snowh; // one or three hours
-    @NonNull
-    private String cityName;
-    @NonNull
-    private Double lat;
-
-    @NonNull
-    private Double lon;
-
-    @NonNull
-    private String cityCountry;
 
     @Override
     public String toString() {
