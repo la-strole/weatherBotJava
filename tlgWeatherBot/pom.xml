@@ -15,8 +15,8 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.compiler.source>17</maven.compiler.source>
-    <maven.compiler.target>17</maven.compiler.target>
+    <maven.compiler.source>21</maven.compiler.source>
+    <maven.compiler.target>21</maven.compiler.target>
   </properties>
 
   <dependencies>
@@ -24,14 +24,14 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.13.1</version>
+      <version>4.13.2</version>
       <scope>test</scope>
     </dependency>
 
     <dependency>
       <groupId>org.telegram</groupId>
       <artifactId>telegrambots-longpolling</artifactId>
-      <version>8.0.0</version>
+      <version>8.2.0</version>
     </dependency>
     <dependency>
 
@@ -43,20 +43,20 @@
     <dependency>
       <groupId>org.telegram</groupId>
       <artifactId>telegrambots-client</artifactId>
-      <version>8.0.0</version>
+      <version>8.2.0</version>
     </dependency>
 
     <!-- https://stleary.github.io/JSON-java/index.html-->
     <dependency>
       <groupId>org.json</groupId>
       <artifactId>json</artifactId>
-      <version>20240303</version>
+      <version>20250107</version>
     </dependency>
 
     <dependency>
       <groupId>org.xerial</groupId>
       <artifactId>sqlite-jdbc</artifactId>
-      <version>3.47.1.0</version>
+      <version>3.48.0.0</version>
     </dependency>
 
     <!-- https://mvnrepository.com/artifact/org.projectlombok/lombok -->
@@ -87,8 +87,8 @@
           <artifactId>maven-compiler-plugin</artifactId>
           <version>3.8.0</version>
           <configuration>
-            <source>17</source>
-            <target>17</target>
+            <source>21</source>
+            <target>21</target>
             <annotationProcessorPaths>
               <path>
                 <groupId>org.projectlombok</groupId>
