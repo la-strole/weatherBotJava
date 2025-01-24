@@ -45,7 +45,7 @@ This project is a Telegram bot that provides weather updates using the OpenWeath
     java -jar target/tlgWeatherBot-1.0-SNAPSHOT.jar
     ```
 ## Run from package
-1. You can use the uber JAR package by placing it in a separate folder and adding the .env file there.
+1. You can use the uber JAR package (look at release) by placing it in a separate folder and adding the .env file there.
    
 ## Usage
 
