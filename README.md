@@ -14,14 +14,14 @@ This project is a Telegram bot that provides weather updates using the OpenWeath
 - Java 11 or higher
 - Maven
 - A Telegram bot token (You can get one by creating a bot on Telegram via BotFather)
-- An OpenWeatherMap API key
+- An OpenWeatherMap API key (https://openweathermap.org/api)
 
-## Setup
+## Build
 
 1. Clone the repository:
     ```sh
     git clone https://github.com/la-strole/weatherBotJava.git
-    cd telegramweatherbot
+    cd ./weatherBotJava/tlgWeatherBot
     ```
 
 2. Create a `.env` file in the root directory and add your Telegram bot token and OpenWeatherMap API key:
@@ -29,7 +29,12 @@ This project is a Telegram bot that provides weather updates using the OpenWeath
     TelegramBotToken=YOUR_TELEGRAM_BOT_TOKEN
     OpenWeatherToken=YOUR_OPENWEATHERMAP_API_KEY
     ```
-
+    Alternatively, you can add a log level (default is INFO):
+    ```env
+    TelegramBotToken=YOUR_TELEGRAM_BOT_TOKEN
+    OpenWeatherToken=YOUR_OPENWEATHERMAP_API_KEY
+    LOG_LEVEL=FINE
+    ```
 3. Build the project using Maven:
     ```sh
     mvn clean install
@@ -39,7 +44,9 @@ This project is a Telegram bot that provides weather updates using the OpenWeath
     ```sh
     java -jar target/tlgWeatherBot-1.0-SNAPSHOT.jar
     ```
-
+## Run from package
+1. You can use the uber JAR package by placing it in a separate folder and adding the .env file there.
+   
 ## Usage
 
 - Start a chat with your bot on Telegram.
@@ -61,4 +68,3 @@ Contributions are welcome! Please open an issue or submit a pull request for any
 ## License
 
 This project is licensed under the MIT License.
-```
