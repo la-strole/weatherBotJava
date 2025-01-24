@@ -1,6 +1,7 @@
 package com.example;
 
 import java.io.IOException;
+import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
@@ -25,6 +26,24 @@ public class Main {
                     .readConfiguration(Main.class.getResourceAsStream("/logging.properties"));
         } catch (final IOException e) {
             logger.severe("Could not load logging configuration: " + e.toString());
+        }
+
+        // Set log level from environment variable
+        String logLevel = Dotenv.load().get("LOG_LEVEL");
+        if (logLevel != null) {
+            try {
+                Level level = Level.parse(logLevel.toUpperCase());
+                Logger rootLogger = Logger.getLogger("");
+                rootLogger.setLevel(level);
+                for (Handler h : rootLogger.getHandlers()) {
+                    h.setLevel(level);
+                }
+                logger.log(Level.INFO, () -> "Log level set to: " + level);
+            } catch (IllegalArgumentException e) {
+                logger.log(Level.WARNING, () -> "Invalid log level specified: " + logLevel);
+            }
+        } else {
+            logger.log(Level.INFO, "No log level specified, using default.");
         }
 
         final String botToken = Dotenv.load().get("TelegramBotToken");
