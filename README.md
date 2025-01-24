@@ -11,7 +11,7 @@ This project is a Telegram bot that provides weather updates using the OpenWeath
 
 ## Prerequisites
 
-- Java 11 or higher
+- Java 17 or higher
 - Maven
 - A Telegram bot token (You can get one by creating a bot on Telegram via BotFather)
 - An OpenWeatherMap API key (https://openweathermap.org/api)
