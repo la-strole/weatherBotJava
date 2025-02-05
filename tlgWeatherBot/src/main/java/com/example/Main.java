@@ -62,7 +62,7 @@ public class Main {
             Database.createTable();
             logger.log(Level.INFO, () -> "TlgBot successfully started!");
             // Run the scheduled deletion task
-            int task1InervalInMinutes = 1;
+            int task1InervalInMinutes = 40;
             Runnable task1 = () -> ScheduledDeletion.run(task1InervalInMinutes);
             scheduler.scheduleAtFixedRate(task1, 0, task1InervalInMinutes, TimeUnit.MINUTES);
             // Run the scheduled message sender
