@@ -5,6 +5,9 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import org.telegram.telegrambots.longpolling.TelegramBotsLongPollingApplication;
 
@@ -47,16 +50,26 @@ public class Main {
         }
 
         final String botToken = Dotenv.load().get("TelegramBotToken");
-        try (TelegramBotsLongPollingApplication botsApplication =
-                new TelegramBotsLongPollingApplication()) {
+        if (botToken == null) {
+            logger.log(Level.SEVERE, "Telegram bot token not found in environment variables.");
+            System.exit(-1);
+        }
+
+        try (TelegramBotsLongPollingApplication botsApplication = new TelegramBotsLongPollingApplication();
+                ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(2)) {
             final TlgBot bot = new TlgBot(botToken);
             botsApplication.registerBot(botToken, bot);
             Database.createTable();
             logger.log(Level.INFO, () -> "TlgBot successfully started!");
             // Run the scheduled deletion task
-            ScheduledDeletion.run(15);
-            // Run the sceduledd message sender
-            SendScheduledMessage.run(60, bot.getTelegramClient());
+            int task1InervalInMinutes = 1;
+            Runnable task1 = () -> ScheduledDeletion.run(task1InervalInMinutes);
+            scheduler.scheduleAtFixedRate(task1, 0, task1InervalInMinutes, TimeUnit.MINUTES);
+            // Run the scheduled message sender
+            int task2IntervalInSeconds = 60;
+            Runnable task2 = () -> SendScheduledMessage.run(bot.getTelegramClient());
+            scheduler.scheduleAtFixedRate(task2, 0, task2IntervalInSeconds, TimeUnit.SECONDS);
+            // Block the current thread
             Thread.currentThread().join();
         } catch (final InterruptedException e) {
             Thread.currentThread().interrupt();

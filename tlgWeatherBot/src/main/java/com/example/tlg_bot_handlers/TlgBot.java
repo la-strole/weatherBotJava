@@ -29,7 +29,6 @@ import org.telegram.telegrambots.meta.generics.TelegramClient;
  * }
  * </pre>
  * 
- * @author Your Name
  * @version 1.0
  */
 public class TlgBot implements LongPollingSingleThreadUpdateConsumer {

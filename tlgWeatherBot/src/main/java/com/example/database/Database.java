@@ -106,7 +106,7 @@ public class Database {
             createTable2Stmt.executeUpdate();
             createTable3Stmt.executeUpdate();
             createTable4Stmt.executeUpdate();
-            logger.log(Level.INFO, "Tables created successfully or they were existing");
+            logger.log(Level.INFO, "Database tables have been successfully created or have already been created");
         } catch (final SQLException e) {
             logger.log(Level.SEVERE, e::toString);
             throw new AppErrorException("Can not create table.");

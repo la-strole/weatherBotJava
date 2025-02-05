@@ -5,37 +5,24 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.time.Instant;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+
 /**
- * The ScheduledDeletion class provides functionality to schedule a task that
- * deletes old rows from
- * a database table at a fixed interval. The class uses a
- * ScheduledExecutorService to periodically
- * execute a SQL DELETE statement that removes rows older than a specified time.
+ * The ScheduledDeletion class provides a utility method to delete old rows from specific database tables
+ * at a scheduled interval. It connects to the database and executes prepared statements to delete rows
+ * older than the specified interval from the 'multipleCities', 'forecasts', and 'subscribes' tables.
+ * The number of rows deleted from each table is logged. If an SQL exception occurs, it is logged.
  * 
- * <p>
- * Usage example:
+ * <p>This class cannot be instantiated.</p>
  * 
+ * <p>Usage example:</p>
  * <pre>
  * {@code
- * ScheduledDeletion.run(15); // Schedules the task to run every 15 minutes
+ * ScheduledDeletion.run(60); // Deletes rows older than 60 minutes
  * }
  * </pre>
- * 
- * <p>
- * Note: Ensure that the database URL is correctly set in the DB_URL variable.
- * 
- * <p>
- * Methods:
- * <ul>
- * <li>{@link #run(long)} - Schedules the deletion task to run at a fixed
- * interval.
- * </ul>
  */
 public class ScheduledDeletion {
 
@@ -46,45 +33,43 @@ public class ScheduledDeletion {
     private static final String DELETE_NULL_TIME_ROWS = "DELETE FROM subscribes WHERE time is NULL";
     private static final Logger logger = Logger.getLogger(ScheduledDeletion.class.getName());
 
-    /**
-     * Schedules a task to delete old rows from the database at a fixed interval.
-     *
-     * @param intervalInMinutes the interval in minutes at which the task should run
-     */
-    public static void run(final long intervalInMinutes) {
-        try (ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1)) {
+/**
+ * Runs the scheduled deletion of old rows from the database tables.
+ *
+ * @param intervalInMinutes the interval in minutes to determine which rows are considered old
+ *                          and should be deleted.
+ * 
+ * This method connects to the database and executes three prepared statements to delete old rows
+ * from the tables 'multipleCities', 'forecasts', and 'subscribes'. It logs the number of rows deleted
+ * from each table. If an SQL exception occurs, it logs the exception.
+ */
+    public static void run(int intervalInMinutes) {
+        try (Connection connection = DriverManager.getConnection(DB_URL);
+                PreparedStatement preparedStatement = connection
+                        .prepareStatement(DELETE_OLD_ROWS_QUERY1);
+                PreparedStatement preparedStatement2 = connection
+                        .prepareStatement(DELETE_OLD_ROWS_QUERY2);
+                PreparedStatement preparedStatement3 = connection
+                        .prepareStatement(DELETE_NULL_TIME_ROWS)) {
+            preparedStatement.setString(1,
+                    Instant.now().minusSeconds(intervalInMinutes).toString());
+            preparedStatement2.setString(1,
+                    Instant.now().minusSeconds(intervalInMinutes).toString());
+            final int rowsDeletedT1 = preparedStatement.executeUpdate();
+            final int rowsDeletedT2 = preparedStatement2.executeUpdate();
+            final int rowsDeletedT3 = preparedStatement3.executeUpdate();
 
-            final Runnable deleteOldRowsTask = () -> {
-                try (Connection connection = DriverManager.getConnection(DB_URL);
-                        PreparedStatement preparedStatement = connection
-                                .prepareStatement(DELETE_OLD_ROWS_QUERY1);
-                        PreparedStatement preparedStatement2 = connection
-                                .prepareStatement(DELETE_OLD_ROWS_QUERY2);
-                        PreparedStatement preparedStatement3 = connection
-                                .prepareStatement(DELETE_NULL_TIME_ROWS)) {
-                    preparedStatement.setString(1,
-                            Instant.now().minusSeconds(intervalInMinutes * 60).toString());
-                    preparedStatement2.setString(1,
-                            Instant.now().minusSeconds(intervalInMinutes * 60).toString());
-                    final int rowsDeletedT1 = preparedStatement.executeUpdate();
-                    final int rowsDeletedT2 = preparedStatement2.executeUpdate();
-                    final int rowsDeletedT3 = preparedStatement3.executeUpdate();
-
-                    logger.log(Level.FINE, () -> String.format(
-                            "%d old rows deleted from multipleCities, " +
-                            "%d old rows deleted from forecasts, " + 
+            logger.log(Level.INFO, () -> String.format(
+                    "%d old rows deleted from multipleCities, " +
+                            "%d old rows deleted from forecasts, " +
                             "%d old rows deleted from subscribes",
-                            rowsDeletedT1, rowsDeletedT2, rowsDeletedT3));
-                } catch (final SQLException e) {
-                    logger.severe(e.toString());
-                }
-            };
-
-            // Schedule the task to run every 15 minutes
-            scheduler.scheduleAtFixedRate(deleteOldRowsTask, 0, intervalInMinutes, TimeUnit.MINUTES);
+                    rowsDeletedT1, rowsDeletedT2, rowsDeletedT3));
+        } catch (final SQLException e) {
+            logger.log(Level.SEVERE, e::toString);
         }
     }
 
+    
     // Private constructor to hide the implicit public one
     private ScheduledDeletion() {
         throw new IllegalStateException("This is a utility class and cannot be instantiated");
