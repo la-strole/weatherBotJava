@@ -1,5 +1,7 @@
 package com.example.tlg_bot_handlers;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -7,6 +9,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
+import com.example.GeminiApi;
 import com.example.database.Database;
 import com.example.exceptions.AppErrorCheckedException;
 import com.example.tlg_bot_handlers.forecast_item_parsers.ForecastFull;
@@ -83,9 +86,18 @@ public class SendScheduledMessage {
                 final String text = isForecastTypeFull
                         ? ForecastFull.getForecastStringToSpecificDay(firstDayForecast, language)
                         : ForecastShort.getForecastStringToSpecificDay(firstDayForecast, language);
+                String result = GeminiApi.getGeminiData(text);
                 // Send message with the first day forecast.
                 logger.log(Level.FINE, () -> "Message sent");
-                SendTlgMessage.send(telegramClient, chatId, text);
+                List<String> messageList = new ArrayList<>();
+                int textLength = result.length();
+                for (int j = 0; j < textLength; j += 4090) {
+                    // Ensure we don't exceed the string length
+                    messageList.add(result.substring(j, Math.min(textLength, j + 4090)));
+                }
+                for (String message : messageList) {
+                    SendTlgMessage.send(telegramClient, chatId, message);
+                }
             }
         } catch (AppErrorCheckedException e) {
             logger.log(Level.SEVERE, e::toString);
