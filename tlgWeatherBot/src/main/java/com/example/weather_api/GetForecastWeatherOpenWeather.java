@@ -154,7 +154,7 @@ public class GetForecastWeatherOpenWeather extends GetForecastWeather {
             params.put("units", "metric");
             params.put("lang", language);
             final JSONArray apiResponseForecastWeather = JsonHandler.getJsonFromWeb(WEATHER_FORCAST_API_URL,
-                    Optional.of(params));
+                    Optional.of(params), "GET", "");
             if (apiResponseForecastWeather.isEmpty()) {
                 logger.log(Level.SEVERE, "Empty JSON returned from API");
                 throw new AppErrorCheckedException(RUNTIME_ERROR);

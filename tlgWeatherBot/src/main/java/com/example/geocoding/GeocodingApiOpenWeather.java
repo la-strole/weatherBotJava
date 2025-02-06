@@ -53,7 +53,7 @@ public class GeocodingApiOpenWeather extends GeocodingApi {
         }
         try {
             final Map<String, String> params = Map.of("q", cityName, "limit", "5", "appid", apiKey);
-            final JSONArray result = JsonHandler.getJsonFromWeb(GEOCODING_API_URL, Optional.of(params));
+            final JSONArray result = JsonHandler.getJsonFromWeb(GEOCODING_API_URL, Optional.of(params), "GET", "");
             if (result.isEmpty()) {
                 logger.log(Level.SEVERE, () -> String.format("Result from API is empty. City name: %s", cityName));
                 throw new AppErrorCheckedException(

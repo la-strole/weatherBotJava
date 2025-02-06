@@ -150,7 +150,7 @@ public class GetCurrentWeatherOpenWeather extends GetCurrentWeather {
             params.put("units", "metric");
             params.put("lang", language);
             final JSONArray result = JsonHandler.getJsonFromWeb(CURRENT_WEATHER_API_URL,
-                    Optional.of(params));
+                    Optional.of(params), "GET", "");
             if (result.isEmpty()) {
                 logger.log(Level.SEVERE, "Empty response from current weather API.");
                 throw new AppErrorCheckedException(RUNTIME_ERROR);

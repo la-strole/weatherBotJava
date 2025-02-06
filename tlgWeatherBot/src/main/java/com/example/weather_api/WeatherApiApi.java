@@ -67,7 +67,7 @@ public class WeatherApiApi {
         params.put("lang", lang);
         JSONArray result;
         try {
-            result = JsonHandler.getJsonFromWeb(CURRENT_WEATHER_API_URL, Optional.of(params));
+            result = JsonHandler.getJsonFromWeb(CURRENT_WEATHER_API_URL, Optional.of(params), "GET", "");
         } catch (final AppErrorCheckedException e) {
             return null;
         }
@@ -105,7 +105,7 @@ public class WeatherApiApi {
 
         JSONArray result;
         try {
-            result = JsonHandler.getJsonFromWeb(WEATHER_FORECAST_API_URL, Optional.of(params));
+            result = JsonHandler.getJsonFromWeb(WEATHER_FORECAST_API_URL, Optional.of(params), "GET", "");
         } catch (final AppErrorCheckedException e) {
             return null;
         }

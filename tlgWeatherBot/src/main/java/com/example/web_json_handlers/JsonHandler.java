@@ -6,6 +6,8 @@ import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.net.http.HttpRequest.BodyPublisher;
+import java.net.http.HttpRequest.BodyPublishers;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.HashMap;
@@ -51,11 +53,11 @@ public class JsonHandler {
      * @return A JSONArray containing the fetched JSON data.
      * @throws AppErrorCheckedException If there is an error during the JSON fetching or parsing process.
      */
-    public static JSONArray getJsonFromWeb(final String url, final Optional<Map<String, String>> params)
+    public static JSONArray getJsonFromWeb(final String url, final Optional<Map<String, String>> params, String method, String data)
             throws AppErrorCheckedException {
         JSONArray result = new JSONArray();
         final Map<String, String> urlParams = params.orElseGet(HashMap::new);
-        final String jsonString = getJsonStringFromWeb(url, urlParams);
+        final String jsonString = getJsonStringFromWeb(url, urlParams, method, data);
         // Check if jsonString is JSONArray.
         try {
             result = new JSONArray(jsonString);
@@ -112,12 +114,12 @@ public class JsonHandler {
      * @throws AppErrorCheckedException If there is an error during the request or the response
      *         status is not 200 or if request interrupted.
      */
-    private static String getJsonStringFromWeb(final String url, final Map<String, String> urlParams)
+    private static String getJsonStringFromWeb(final String url, final Map<String, String> urlParams, String method, String data)
             throws AppErrorCheckedException {
         try (HttpClient client =
                 HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();) {
             final HttpRequest request = HttpRequest.newBuilder().uri(buildURI(url, urlParams))
-                    .header("Accept", "application/json").build();
+                    .header("Accept", "application/json").method(method, BodyPublishers.ofString(data)).build();
             final HttpResponse<String> response =
                     client.send(request, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() != 200) {

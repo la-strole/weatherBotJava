@@ -106,7 +106,7 @@ public class OpenWeatherApi {
             params.put("lon", lon.toString());
             params.put("appid", API_KEY);
             final JSONArray result = JsonHandler.getJsonFromWeb(CURRENT_AIR_POLLUTION_API_URL,
-                    Optional.of(params));
+                    Optional.of(params), "GET", "");
             if (result.isEmpty()) {
                 logger.log(Level.SEVERE, EMPTY_RESULT_ERROR);
                 throw new AppErrorCheckedException(RUNTIME_ERROR);
@@ -144,7 +144,7 @@ public class OpenWeatherApi {
             params.put("lon", lon.toString());
             params.put("appid", API_KEY);
             final JSONArray result = JsonHandler.getJsonFromWeb(FORCAST_AIR_POLLUTION_API_URL,
-                    Optional.of(params));
+                    Optional.of(params), "GET", "");
             if (result.isEmpty()) {
                 logger.log(Level.SEVERE, EMPTY_RESULT_ERROR);
                 throw new AppErrorCheckedException(RUNTIME_ERROR);
