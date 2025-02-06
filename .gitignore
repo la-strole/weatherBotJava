@@ -52,3 +52,7 @@ app.log.*
 
 # Ignore database file
 *.db
+
+# Ignore some unnecessary files
+Temp.java
+dependency-reduced-pom.xml
