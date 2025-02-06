@@ -1,6 +1,7 @@
 package com.example.tlg_bot_handlers.forecast_item_parsers;
 
 import java.time.format.DateTimeFormatter;
+import java.time.format.TextStyle;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
@@ -35,8 +36,8 @@ public class ForecastShort {
         // Get the timestamp and timezone
         try {
             result.append(
-                    String.format("<b>%s:</b>%n", forecastItem.getDt()
-                            .format(DateTimeFormatter.ofPattern("HH:mm"))));
+                    String.format("<b>%s:</b>%n",
+                            forecastItem.getDt().format(DateTimeFormatter.ofPattern("HH:mm"))));
             result.append(String.format("\t<b>%s:</b> %s%n",
                     DataValidation.getStringFromResourceBoundle(
                             rb, "description"),
@@ -57,12 +58,15 @@ public class ForecastShort {
     }
 
     /**
-     * Generates a formatted forecast string for a specific day from a JSONArray of forecast data.
+     * Generates a formatted forecast string for a specific day from a JSONArray of
+     * forecast data.
      *
      * @param forecasts the JSONArray containing forecast data
-     * @param language the language code to format the date and other locale-specific information
+     * @param language  the language code to format the date and other
+     *                  locale-specific information
      * @return a formatted string containing the forecast information
-     * @throws AppErrorCheckedException if there is an error during the deserialization of forecast data
+     * @throws AppErrorCheckedException if there is an error during the
+     *                                  deserialization of forecast data
      */
     public static String getForecastStringToSpecificDay(final JSONArray forecasts, final String language)
             throws AppErrorCheckedException {
@@ -70,10 +74,11 @@ public class ForecastShort {
         for (int i = 0; i < forecasts.length(); i += 2) {
             final ForecastItem forecastItem = ForecastItem.deserializeFromJonObject(forecasts.getJSONObject(i));
             if (i == 0) {
-                text.append(String.format("<b>%s:\t%s</b>%n",
+                Locale locale = Locale.forLanguageTag(language);
+                text.append(String.format("<b>%s:\t%s\t(%s)</b>%n",
                         forecastItem.getCityName(),
-                        forecastItem.getDt().format(DateTimeFormatter.ofPattern("dd.MM.yyyy",
-                                Locale.forLanguageTag(language)))));
+                        forecastItem.getDt().format(DateTimeFormatter.ofPattern("dd.MM.yyyy", locale)),
+                        forecastItem.getDt().getDayOfWeek().getDisplayName(TextStyle.FULL, locale)));
             }
             text.append(parser(forecastItem, language));
         }
