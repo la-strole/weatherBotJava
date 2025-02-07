@@ -18,10 +18,12 @@ import com.example.web_json_handlers.JsonHandler;
 import io.github.cdimascio.dotenv.Dotenv;
 
 /**
- * The GeminiApi class provides a method to fetch and rewrite weather information
+ * The GeminiApi class provides a method to fetch and rewrite weather
+ * information
  * in a randomly selected literary style using the Gemini API.
  * <p>
- * This class contains a single public static method {@link #getGeminiData(String)}
+ * This class contains a single public static method
+ * {@link #getGeminiData(String)}
  * which takes a weather information string as input and returns the rewritten
  * weather information in a selected literary style.
  * </p>
@@ -40,11 +42,13 @@ public class GeminiApi {
     static Random random = new Random();
 
     /**
-     * Fetches and rewrites the given weather string in a randomly selected literary style using the Gemini API.
+     * Fetches and rewrites the given weather string in a randomly selected literary
+     * style using the Gemini API.
      *
      * @param weatherString The weather information to be rewritten.
      * @return The rewritten weather information in the selected literary style.
-     * @throws AppErrorCheckedException If there is an error during the API call or processing the response.
+     * @throws AppErrorCheckedException If there is an error during the API call or
+     *                                  processing the response.
      */
     public static String getGeminiData(final String weatherString) throws AppErrorCheckedException {
         final String apiKey = Dotenv.load().get("GEMINI_API_KEY");
@@ -78,9 +82,10 @@ public class GeminiApi {
                 final JSONArray partsContext = new JSONArray();
                 final JSONObject text = new JSONObject();
                 text.put("text", String.format(
-                        "Rewrite the following text in the style of %s in the same language as following text: %s",
-                        styles.get(random.nextInt(styles.size())),
-                        weatherString));
+                    "Summarize the three-hour forecast into a general forecast for the whole day, " + 
+                    "then rewrite it in the style of %s in the language of the forecast, and send me only rewrited result.%n%s",
+                    styles.get(random.nextInt(styles.size())),
+                    weatherString));
                 partsContext.put(text);
                 parts.put("parts", partsContext);
                 final JSONArray contentsContext = new JSONArray();
