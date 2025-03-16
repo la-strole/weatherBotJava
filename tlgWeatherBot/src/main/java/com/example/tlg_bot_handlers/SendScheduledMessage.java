@@ -86,7 +86,7 @@ public class SendScheduledMessage {
                 final String text = isForecastTypeFull
                         ? ForecastFull.getForecastStringToSpecificDay(firstDayForecast, language)
                         : ForecastShort.getForecastStringToSpecificDay(firstDayForecast, language);
-                String result = GeminiApi.getGeminiData(text);
+                String result = GeminiApi.getGeminiData(text, language);
                 // Send message with the first day forecast.
                 logger.log(Level.FINE, () -> "Message sent");
                 List<String> messageList = new ArrayList<>();

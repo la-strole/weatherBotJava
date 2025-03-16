@@ -46,14 +46,19 @@ public class GeminiApi {
      * style using the Gemini API.
      *
      * @param weatherString The weather information to be rewritten.
+     * @param language      The language of the weather information.
      * @return The rewritten weather information in the selected literary style.
      * @throws AppErrorCheckedException If there is an error during the API call or
      *                                  processing the response.
      */
-    public static String getGeminiData(final String weatherString) throws AppErrorCheckedException {
+    public static String getGeminiData(final String weatherString, final String language)
+            throws AppErrorCheckedException {
         final String apiKey = Dotenv.load().get("GEMINI_API_KEY");
         if (apiKey != null) {
             try {
+                final Map<String, String> langMap = Map.of("en", "in american english language",
+                        "ru", "in russian language",
+                        "am", "in armenian language");
                 final List<String> styles = new ArrayList<>();
                 styles.add("Classic Realism");
                 styles.add("Romanticism");
@@ -82,10 +87,11 @@ public class GeminiApi {
                 final JSONArray partsContext = new JSONArray();
                 final JSONObject text = new JSONObject();
                 text.put("text", String.format(
-                    "Summarize the three-hour forecast into a general forecast for the whole day, " + 
-                    "then rewrite it in the style of %s in the language of the forecast, and send me only rewrited result.%n%s",
-                    styles.get(random.nextInt(styles.size())),
-                    weatherString));
+                        "Please help me convert the following 3-hour weather forecast into a natural language day summary in style of %s %s. Here is the forecast:" +
+                        "Please provide a clear and engaging summary that includes the key weather details for the day. Here is the forecast:%s",
+                        styles.get(random.nextInt(styles.size())),
+                        langMap.getOrDefault(language, "in enlish"),
+                        weatherString));
                 partsContext.put(text);
                 parts.put("parts", partsContext);
                 final JSONArray contentsContext = new JSONArray();
