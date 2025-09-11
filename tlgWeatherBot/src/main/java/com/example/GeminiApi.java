@@ -86,11 +86,20 @@ public class GeminiApi {
                 final JSONObject parts = new JSONObject();
                 final JSONArray partsContext = new JSONArray();
                 final JSONObject text = new JSONObject();
-                text.put("text", String.format(
-                        "Please help me convert the following 3-hour weather forecast into a natural language day summary in style of %s %s. Here is the forecast:" +
-                        "Please provide a clear and engaging summary that includes the key weather details for the day. Here is the forecast:%s",
-                        styles.get(random.nextInt(styles.size())),
-                        langMap.getOrDefault(language, "in enlish"),
+                text.put("text", String.format("""
+                        Please help me convert the following 3-hour weather forecast into a natural language day summary. 
+                        You can use such text as examples, but you don't have to do it that way. 
+                        You can sometimes make a table with the most convenient representation of the weather for today. 
+                        Example: Today, in Paris, the potential for thunderstorms remains.
+                        The chance of precipitation is high. However, the rainfall will be light. 
+                        The temperature is predicted to vary between a pleasant 22°C and a refreshing 13°C.
+                        The forecast high is lower and more aligned with what is typical in October than in September.
+                        Sunrise was at 06:37 and sunset will be at 19:19; the daylight will last for 12h and 41min. 
+                        OR something like this link in table: https://www.accuweather.com/en/fr/paris/623/weather-forecast/623?city=paris                                                                                                                               
+                        Try to compose a typical one-paragraph weather forecast text from weather forecast data. 
+                        You can use emoji and pictures. Use %s language. Here is the forecast: %s
+                        """,
+                        langMap.getOrDefault(language, "english"),
                         weatherString));
                 partsContext.put(text);
                 parts.put("parts", partsContext);
