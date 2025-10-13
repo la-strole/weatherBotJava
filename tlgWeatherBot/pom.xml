@@ -31,7 +31,7 @@
     <dependency>
       <groupId>org.telegram</groupId>
       <artifactId>telegrambots-longpolling</artifactId>
-      <version>9.1.0</version>
+      <version>9.2.0</version>
     </dependency>
     <dependency>
 
